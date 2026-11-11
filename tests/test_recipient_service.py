@@ -10,7 +10,7 @@ class TestRecipientService(unittest.TestCase):
 
     def test_default_recipient_state(self):
         profile = self.service.get_recipient_profile()
-        self.assertEqual(profile.name, "Alex Mercer")
+        self.assertEqual(profile.name, "Vittoris Team")
         self.assertEqual(profile.status, RecipientStatusEnum.BUSY)
         self.assertFalse(self.service.is_recipient_available())
 

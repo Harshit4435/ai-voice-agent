@@ -3,20 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inbound AI Voice Receptionist — Gemini Voice</title>
+  <title>Inbound AI Voice Receptionist — Vittoris Team</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0d0f14;
-      --bg-surface: #131720;
-      --bubble-user: #1f2533;
-      --bubble-bot: #161b26;
+      --bg: #0b0d13;
+      --bubble-user: #1c2230;
+      --bubble-bot: #141822;
       --gemini-blue: #4285f4;
       --gemini-purple: #9b72cb;
       --gemini-pink: #d96570;
-      --gemini-cyan: #1ba0e1;
       --text-main: #f0f4f9;
       --text-muted: #9aa0a6;
       --border: rgba(255, 255, 255, 0.08);
@@ -26,11 +24,7 @@
       --font-mono: 'JetBrains Mono', monospace;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background: var(--bg);
@@ -45,7 +39,6 @@
       overflow-x: hidden;
     }
 
-    /* Top Nav */
     header {
       padding: 16px 28px;
       display: flex;
@@ -56,14 +49,10 @@
       position: sticky;
       top: 0;
       z-index: 50;
-      background: rgba(13, 15, 20, 0.85);
+      background: rgba(11, 13, 19, 0.88);
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .brand { display: flex; align-items: center; gap: 12px; }
 
     .gemini-sparkle {
       width: 28px;
@@ -92,12 +81,11 @@
       font-weight: 600;
     }
 
-    /* Recipient Status Switcher */
     .recipient-badge {
       display: flex;
       align-items: center;
       gap: 12px;
-      background: rgba(31, 37, 51, 0.7);
+      background: rgba(28, 34, 48, 0.8);
       border: 1px solid var(--border);
       padding: 6px 14px;
       border-radius: 30px;
@@ -107,13 +95,11 @@
       font-size: 12px;
       color: var(--text-muted);
     }
-    .recipient-text strong {
-      color: #fff;
-    }
+    .recipient-text strong { color: #fff; }
 
     .status-select {
-      background: #0d0f14;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #0b0d13;
+      border: 1px solid rgba(255, 255, 255, 0.18);
       color: #fff;
       padding: 4px 10px;
       border-radius: 20px;
@@ -123,7 +109,6 @@
       cursor: pointer;
     }
 
-    /* Center Stage / Animated Orb */
     .orb-stage {
       display: flex;
       flex-direction: column;
@@ -176,12 +161,10 @@
       0%, 100% { transform: scale(1) rotate(0deg); }
       50% { transform: scale(1.05) rotate(180deg); }
     }
-
     @keyframes orbListen {
       0%, 100% { transform: scale(1.05); }
       50% { transform: scale(1.18); }
     }
-
     @keyframes orbSpeak {
       0%, 100% { transform: scale(1.08) rotate(0deg); }
       50% { transform: scale(1.22) rotate(120deg); }
@@ -195,13 +178,12 @@
       letter-spacing: 0.02em;
     }
 
-    /* Chat Conversation Scroll Area */
     .chat-container {
       flex: 1;
       max-width: 840px;
       width: 100%;
       margin: 0 auto;
-      padding: 10px 24px 140px;
+      padding: 10px 24px 150px;
       display: flex;
       flex-direction: column;
       gap: 18px;
@@ -213,17 +195,14 @@
       gap: 14px;
       animation: messageIn 0.3s ease forwards;
     }
-
     @keyframes messageIn {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .message-row.user {
-      justify-content: flex-end;
-    }
+    .message-row.user { justify-content: flex-end; }
 
-    .message-avatar {
+    .message-avatar.bot {
       width: 34px;
       height: 34px;
       border-radius: 50%;
@@ -231,16 +210,9 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-    }
-
-    .message-avatar.bot {
       background: linear-gradient(135deg, #4285f4, #9b72cb);
     }
-    .message-avatar.bot svg {
-      width: 18px;
-      height: 18px;
-      fill: #fff;
-    }
+    .message-avatar.bot svg { width: 18px; height: 18px; fill: #fff; }
 
     .message-bubble {
       max-width: 78%;
@@ -288,13 +260,12 @@
       border-color: rgba(16, 185, 129, 0.25);
     }
 
-    /* Fixed Bottom Bar */
     .bottom-bar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: linear-gradient(to top, rgba(13, 15, 20, 0.96) 70%, transparent);
+      background: linear-gradient(to top, rgba(11, 13, 19, 0.98) 75%, transparent);
       padding: 14px 20px 24px;
       display: flex;
       flex-direction: column;
@@ -303,7 +274,6 @@
       z-index: 100;
     }
 
-    /* Scenario Quick Chips */
     .quick-chips-row {
       display: flex;
       gap: 8px;
@@ -315,7 +285,7 @@
     .quick-chips-row::-webkit-scrollbar { display: none; }
 
     .quick-chip {
-      background: rgba(31, 37, 51, 0.7);
+      background: rgba(28, 34, 48, 0.7);
       border: 1px solid var(--border);
       color: var(--text-muted);
       padding: 6px 12px;
@@ -331,11 +301,10 @@
       background: rgba(66, 133, 244, 0.12);
     }
 
-    /* Prompt Input Pill */
     .input-pill {
       max-width: 840px;
       width: 100%;
-      background: #181d28;
+      background: #161b26;
       border: 1px solid var(--border);
       border-radius: 32px;
       padding: 6px 8px 6px 20px;
@@ -360,9 +329,7 @@
       font-family: var(--font-main);
       font-size: 15px;
     }
-    .input-pill input::placeholder {
-      color: #636b77;
-    }
+    .input-pill input::placeholder { color: #636b77; }
 
     .mic-button {
       width: 44px;
@@ -377,27 +344,16 @@
       justify-content: center;
       transition: all 0.2s ease;
     }
-
-    .mic-button:hover {
-      background: rgba(255, 255, 255, 0.16);
-    }
+    .mic-button:hover { background: rgba(255, 255, 255, 0.16); }
 
     .mic-button.recording {
       background: var(--red);
       box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
       animation: pulseMic 1s infinite alternate;
     }
+    @keyframes pulseMic { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
 
-    @keyframes pulseMic {
-      0% { transform: scale(1); }
-      100% { transform: scale(1.1); }
-    }
-
-    .mic-button svg {
-      width: 20px;
-      height: 20px;
-      fill: currentColor;
-    }
+    .mic-button svg { width: 20px; height: 20px; fill: currentColor; }
 
     .send-button {
       width: 44px;
@@ -412,14 +368,13 @@
       justify-content: center;
       transition: all 0.2s ease;
     }
-    .send-button:hover {
-      filter: brightness(1.15);
-    }
-    .send-button svg {
-      width: 18px;
-      height: 18px;
-      fill: #fff;
-      transform: translateX(1px);
+    .send-button:hover { filter: brightness(1.15); }
+    .send-button svg { width: 18px; height: 18px; fill: #fff; transform: translateX(1px); }
+
+    .controls-footer {
+      display: flex;
+      align-items: center;
+      gap: 18px;
     }
 
     .tts-toggle-pill {
@@ -431,29 +386,33 @@
       cursor: pointer;
       user-select: none;
     }
+
+    .silence-indicator {
+      font-size: 11px;
+      color: #70a7ff;
+      font-family: var(--font-mono);
+      display: none;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
   <header>
     <div class="brand">
       <div class="gemini-sparkle"></div>
-      <div class="brand-title">Gemini Voice Inbound Screener</div>
-      <div class="brand-tag">AI Telephony Receptionist</div>
+      <div class="brand-title">Vittoris Voice Assistant</div>
+      <div class="brand-tag">Inbound Telephony Screener</div>
     </div>
 
-    <!-- Recipient status toggle -->
     <div class="recipient-badge">
-      <div class="recipient-text">Recipient: <strong>Alex Mercer</strong></div>
+      <div class="recipient-text">Target: <strong>Vittoris Team</strong></div>
       <select id="recipient-status-select" class="status-select" onchange="onStatusChange(this.value)">
-        <option value="BUSY" selected>🔴 Busy (In Meeting)</option>
-        <option value="AVAILABLE">🟢 Available (Transfer Call)</option>
+        <option value="BUSY" selected>🔴 Team Busy (In Meeting)</option>
+        <option value="AVAILABLE">🟢 Team Available (Transfer)</option>
       </select>
     </div>
   </header>
 
-  <!-- Center Gemini Orb -->
   <div class="orb-stage">
     <div class="gemini-orb-container">
       <div class="gemini-orb" id="gemini-orb"></div>
@@ -461,14 +420,9 @@
     <div class="orb-status" id="orb-status">Tap the mic to talk, or type below</div>
   </div>
 
-  <!-- Chat conversation stream -->
-  <div class="chat-container" id="chat-stream">
-    <!-- Initial Bot Greeting is injected on load -->
-  </div>
+  <div class="chat-container" id="chat-stream"></div>
 
-  <!-- Bottom Input Bar -->
   <div class="bottom-bar">
-    <!-- Quick Scenario Chips for 1-click testing -->
     <div class="quick-chips-row">
       <button class="quick-chip" onclick="fillAndSend('Hi, my name is John Miller and I am calling regarding the commercial contract proposal.')">
         👤 1. "My name is John Miller, calling regarding the contract"
@@ -482,7 +436,7 @@
     </div>
 
     <div class="input-pill">
-      <input type="text" id="user-input" placeholder="Speak your name and reason for calling..." onkeydown="handleKey(event)">
+      <input type="text" id="user-input" placeholder="Speak or type your name and reason for calling..." onkeydown="handleKey(event)">
       
       <button class="mic-button" id="mic-btn" onclick="toggleMic()" title="Click to talk with your voice">
         <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
@@ -493,66 +447,104 @@
       </button>
     </div>
 
-    <label class="tts-toggle-pill">
-      <input type="checkbox" id="tts-checkbox" checked>
-      <span>🔊 Voice Responses (Speaks out loud)</span>
-    </label>
+    <div class="controls-footer">
+      <label class="tts-toggle-pill">
+        <input type="checkbox" id="tts-checkbox" checked>
+        <span>🔊 Natural Voice Audio</span>
+      </label>
+      <span class="silence-indicator" id="silence-indicator">Listening (takes a 2.5s pause to finish)...</span>
+    </div>
   </div>
 
   <script>
-    // Inbound Call State Machine & Entity Parsing (Runs client-side & syncs with backend)
-    let callState = "GREETING"; // GREETING -> AWAITING_NAME_AND_REASON -> AWAITING_CALLBACK -> COMPLETED
+    let callState = "GREETING";
     let callerEntities = { name: null, reason: null, phone: null, bestTime: null };
-    let isSpeaking = false;
     let isRecording = false;
     let recognition = null;
+    let silenceTimer = null;
+    let bestNaturalVoice = null;
     const synth = window.speechSynthesis;
 
-    // Recipient profile
     let recipient = {
-      name: "Alex Mercer",
-      status: "BUSY" // Default to BUSY
+      name: "the Vittoris team",
+      status: "BUSY"
     };
 
-    // Initial greeting line requested by user
-    const INITIAL_GREETING = "Hello! Thank you for calling. Please state your name and the reason for your call.";
+    const INITIAL_GREETING = "Hello! Thank you for calling Vittoris. Please state your name and the reason for your call.";
+
+    // Select the most natural human voice available
+    function loadVoices() {
+      if (!synth) return;
+      const voices = synth.getVoices();
+      // Look for natural English voices (Google US English, Samantha, Karen, Daniel, natural)
+      bestNaturalVoice = voices.find(v => v.name.includes("Google US English") || v.name.includes("Natural") || v.name.includes("Samantha"))
+                      || voices.find(v => v.lang.startsWith("en-US") || v.lang.startsWith("en"))
+                      || voices[0];
+    }
+
+    if (synth) {
+      synth.onvoiceschanged = loadVoices;
+      loadVoices();
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       initSpeech();
-      // Start with the initial greeting
+      loadVoices();
       setTimeout(() => {
         botSpeak(INITIAL_GREETING);
       }, 500);
     });
 
+    /**
+     * Converts phone numbers to digit-by-digit spoken words with commas
+     * e.g. "415-555-0199" -> "4 1 5, 5 5 5, 0 1 9 9"
+     */
+    function convertNumbersToDigitSpeech(text) {
+      return text.replace(/(?:\+?1[-.\s]?)?\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/g, (match, p1, p2, p3) => {
+        const d1 = p1.split('').join(' ');
+        const d2 = p2.split('').join(' ');
+        const d3 = p3.split('').join(' ');
+        return `${d1}, ${d2}, ${d3}`;
+      });
+    }
+
     function initSpeech() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechRecognition) {
         recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
+        recognition.continuous = true;       // Don't cut off abruptly!
+        recognition.interimResults = true;    // Live feedback as user speaks
         recognition.lang = 'en-US';
 
         recognition.onstart = () => {
           isRecording = true;
           document.getElementById('mic-btn').classList.add('recording');
           document.getElementById('gemini-orb').classList.add('listening');
-          document.getElementById('orb-status').textContent = "Listening to you...";
+          document.getElementById('orb-status').textContent = "Listening to you... (Speak at your own pace)";
+          document.getElementById('silence-indicator').style.display = "inline";
         };
 
         recognition.onresult = (e) => {
-          const transcript = e.results[0][0].transcript;
-          document.getElementById('user-input').value = transcript;
-          submitUserMessage();
+          let currentTranscript = '';
+          for (let i = e.resultIndex; i < e.results.length; ++i) {
+            currentTranscript += e.results[i][0].transcript;
+          }
+
+          if (currentTranscript.trim()) {
+            document.getElementById('user-input').value = currentTranscript.trim();
+          }
+
+          // Debounce: Wait 2.5 seconds of silence before submitting, so it never rushes!
+          clearTimeout(silenceTimer);
+          silenceTimer = setTimeout(() => {
+            if (document.getElementById('user-input').value.trim()) {
+              submitUserMessage();
+            }
+          }, 2500);
         };
 
-        recognition.onend = () => {
-          stopMic();
-        };
-
-        recognition.onerror = () => {
-          stopMic();
-        };
+        recognition.onend = () => { stopMic(); };
+        recognition.onerror = () => { stopMic(); };
       }
     }
 
@@ -562,61 +554,77 @@
         return;
       }
       if (!isRecording) {
+        if (synth && synth.speaking) {
+          synth.cancel(); // Mute bot if caller wants to talk
+        }
         recognition.start();
       } else {
         recognition.stop();
+        clearTimeout(silenceTimer);
       }
     }
 
     function stopMic() {
       isRecording = false;
+      clearTimeout(silenceTimer);
       document.getElementById('mic-btn').classList.remove('recording');
       document.getElementById('gemini-orb').classList.remove('listening');
       document.getElementById('orb-status').textContent = "Tap the mic to talk, or type below";
+      document.getElementById('silence-indicator').style.display = "none";
     }
 
     function onStatusChange(newStatus) {
       recipient.status = newStatus;
+      fetch('/api/recipient/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      }).catch(() => {});
     }
 
     function handleKey(e) {
       if (e.key === 'Enter') {
+        clearTimeout(silenceTimer);
         submitUserMessage();
       }
     }
 
     function fillAndSend(text) {
+      clearTimeout(silenceTimer);
       document.getElementById('user-input').value = text;
       submitUserMessage();
     }
 
     function submitUserMessage() {
+      clearTimeout(silenceTimer);
       const input = document.getElementById('user-input');
       const text = input.value.trim();
       if (!text) return;
 
+      if (recognition && isRecording) {
+        recognition.stop();
+      }
+
       appendMessage('user', text);
       input.value = '';
 
-      // Try contacting local backend API if available, else run client-side state machine
       fetch('/api/call/turn', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: 'gemini_session_1', speech_text: text })
+        body: JSON.stringify({ session_id: 'gemini_vittoris_1', speech_text: text })
       })
       .then(res => res.json())
       .then(data => {
         botSpeak(data.bot_speech_response, data.extracted_entities);
       })
       .catch(() => {
-        // High-fidelity fallback state machine running directly in-browser
         processTurnLocally(text);
       });
     }
 
     function processTurnLocally(text) {
-      // 1. Extract Name
-      const nameMatch = text.match(/(?:my name is|name's|this is|i am|i'm)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i)
+      // 1. Extract Name (stop cleanly before 'calling', 'about', etc.)
+      const nameMatch = text.match(/(?:my name is|name's|this is|i am|i'm)\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?=\s+(?:calling|about|regarding|from|with|and|,|\.|$))/i)
                      || text.match(/\b([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:here|speaking)\b/i);
       if (nameMatch && !callerEntities.name) {
         callerEntities.name = nameMatch[1].trim();
@@ -644,25 +652,25 @@
       const name = callerEntities.name || "there";
       const reason = callerEntities.reason || "your call";
 
-      // State Machine Flow
       if (callState === "GREETING" || callState === "AWAITING_NAME_AND_REASON") {
         if (recipient.status === "AVAILABLE") {
           callState = "COMPLETED";
-          const botReply = `Thank you, ${name}! ${recipient.name} is available right now. Please hold on for just a moment while I transfer your call directly to discuss ${reason}.`;
+          const botReply = `Thank you, ${name}! The Vittoris team is available right now. Please hold on for just a moment while I connect your call directly to discuss ${reason}.`;
           botSpeak(botReply, callerEntities);
         } else {
           callState = "AWAITING_CALLBACK";
-          const botReply = `Thank you, ${name}. ${recipient.name} is currently busy in a meeting and cannot take your call right now. Could you please share your phone number and the best time for him to reach back to you?`;
+          const botReply = `Thank you, ${name}. The Vittoris team is currently busy and unavailable to take your call right now. Could you please share your phone number and the best time for our team to reach back to you?`;
           botSpeak(botReply, callerEntities);
         }
       } else if (callState === "AWAITING_CALLBACK") {
         callState = "COMPLETED";
-        const phone = callerEntities.phone || "your number";
+        const phone = callerEntities.phone || "your provided number";
+        const spokenPhone = convertNumbersToDigitSpeech(phone);
         const bestTime = callerEntities.bestTime || "as soon as possible";
-        const botReply = `Thank you, ${name}! I have recorded your number as ${phone} and requested a callback for ${bestTime} regarding ${reason}. ${recipient.name} has been notified and will reach back to you then. Have a wonderful day!`;
+        const botReply = `Thank you, ${name}! I have noted your number as ${spokenPhone}, and requested a callback for ${bestTime} regarding ${reason}. The Vittoris team has been notified and will call you back then. Have a wonderful day!`;
         botSpeak(botReply, callerEntities);
       } else {
-        const botReply = `Your request has already been logged, ${name}. ${recipient.name} will call you back. Thank you and goodbye!`;
+        const botReply = `Your request has already been logged, ${name}. The Vittoris team will call you back. Thank you and goodbye!`;
         botSpeak(botReply, callerEntities);
       }
     }
@@ -675,13 +683,20 @@
 
       orb.classList.remove('listening');
       orb.classList.add('speaking');
-      status.textContent = "Gemini is speaking...";
+      status.textContent = "Vittoris Assistant is speaking...";
 
       const ttsOn = document.getElementById('tts-checkbox').checked;
       if (ttsOn && synth) {
         synth.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.0;
+
+        // Convert phone numbers in spoken text to spaced digits so it reads digit-by-digit!
+        const spokenText = convertNumbersToDigitSpeech(text);
+
+        const utterance = new SpeechSynthesisUtterance(spokenText);
+        if (bestNaturalVoice) {
+          utterance.voice = bestNaturalVoice;
+        }
+        utterance.rate = 0.95; // Natural, realistic conversational speed
         utterance.pitch = 1.0;
         utterance.onend = () => {
           orb.classList.remove('speaking');

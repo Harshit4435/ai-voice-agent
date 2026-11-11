@@ -36,7 +36,7 @@ class TestCallStateMachine(unittest.TestCase):
 
         # Call should now be completed and callback recorded
         self.assertEqual(turn3.current_state, CallStateEnum.CALL_COMPLETED)
-        self.assertIn("415-555-0199", turn3.bot_speech_response)
+        self.assertIn("4 1 5, 5 5 5, 0 1 9 9", turn3.bot_speech_response)
         self.assertIn("tomorrow at 2 PM", turn3.bot_speech_response)
         self.assertIsNotNone(turn3.callback_record)
         self.assertEqual(turn3.callback_record.caller_name, "John Miller")
@@ -60,7 +60,7 @@ class TestCallStateMachine(unittest.TestCase):
         self.assertEqual(turn2.current_state, CallStateEnum.TRANSFERRING_CALL)
         self.assertIn("Sarah Jenkins", turn2.bot_speech_response)
         self.assertIn("available right now", turn2.bot_speech_response)
-        self.assertIn("connect you directly", turn2.bot_speech_response)
+        self.assertIn("connect your call directly", turn2.bot_speech_response)
         self.assertIsNotNone(turn2.notification_preview)
         self.assertIn("LIVE CALL TRANSFER", turn2.notification_preview)
 

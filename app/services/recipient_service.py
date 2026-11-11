@@ -19,11 +19,11 @@ class RecipientService:
 
     def __init__(self) -> None:
         self.recipient = RecipientProfile(
-            name="Alex Mercer",
-            role="Lead Solutions Architect",
+            name="Vittoris Team",
+            role="Client Solutions & Operations",
             status=RecipientStatusEnum.BUSY,  # Default to BUSY as requested
             direct_phone="+1 (555) 019-2834",
-            notification_channel="Slack #inbound-alerts & SMS",
+            notification_channel="Slack #vittoris-inbound & SMS",
         )
         self.callback_inbox: List[CallbackRecord] = []
 

@@ -29,6 +29,18 @@ from app.services.recipient_service import recipient_service
 logger = logging.getLogger("inbound_ai.state_machine")
 
 
+def format_digits_for_speech(phone_str: str) -> str:
+    """Formats phone number digit-by-digit with natural breathing commas for speech synthesis."""
+    digits = [c for c in phone_str if c.isdigit()]
+    if len(digits) == 10:
+        # e.g. "4 1 5, 5 5 5, 0 1 9 9"
+        area = " ".join(digits[0:3])
+        prefix = " ".join(digits[3:6])
+        line = " ".join(digits[6:10])
+        return f"{area}, {prefix}, {line}"
+    return " ".join(digits)
+
+
 class InboundCallSession:
     """Manages an individual inbound telephone call lifecycle."""
 
@@ -44,7 +56,7 @@ class InboundCallSession:
         """Initial inbound call trigger when telephone rings and connects."""
         self.state = CallStateEnum.AWAITING_NAME_AND_REASON
         greeting = (
-            "Thank you for calling. Please state your name and the reason for your call."
+            "Hello! Thank you for calling Vittoris. Please state your name and the reason for your call."
         )
         self.history.append({"speaker": "AI", "text": greeting})
         recipient = recipient_service.get_recipient_profile()
@@ -88,30 +100,27 @@ class InboundCallSession:
 
         # 2. State Machine Routing
         if self.state in (CallStateEnum.GREETING, CallStateEnum.AWAITING_NAME_AND_REASON):
-            # Caller just provided name and reason
             is_available = recipient_service.is_recipient_available()
 
             if is_available:
-                # Recipient is available -> Transfer Call
                 self.state = CallStateEnum.TRANSFERRING_CALL
                 response_text = (
-                    f"Thank you, {name}. {recipient.name} is available right now. "
-                    f"Please hold on while I connect you directly to discuss {reason}."
+                    f"Thank you, {name}. The Vittoris team is available right now. "
+                    f"Please hold on while I connect your call directly to discuss {reason}."
                 )
                 notification_preview = recipient_service.dispatch_transfer_notification(
                     caller_name=name, reason=reason
                 )
             else:
-                # Recipient is BUSY / IN_MEETING -> Ask for Phone Number & Best Time
                 self.state = CallStateEnum.AWAITING_CALLBACK_DETAILS
                 response_text = (
-                    f"Thank you, {name}. {recipient.name} is currently busy and unavailable to take your call right now. "
-                    f"Could you please leave your phone number and the best time for him to reach back to you?"
+                    f"Thank you, {name}. The Vittoris team is currently busy and unavailable to take your call right now. "
+                    f"Could you please leave your phone number and the best time for our team to reach back to you?"
                 )
 
         elif self.state == CallStateEnum.AWAITING_CALLBACK_DETAILS:
-            # Caller provided phone number and preferred time window
             phone = self.caller_entities.phone_number or "your provided number"
+            spoken_phone = format_digits_for_speech(phone) if any(c.isdigit() for c in phone) else phone
             best_time = self.caller_entities.best_time_to_reach or "as soon as possible"
 
             # Create and dispatch callback record
@@ -127,22 +136,22 @@ class InboundCallSession:
             self.state = CallStateEnum.CALL_COMPLETED
 
             response_text = (
-                f"Thank you, {name}. I have noted your number as {phone} and requested a callback for {best_time} "
-                f"regarding {reason}. {recipient.name} has been notified and will reach back to you then. Have a wonderful day!"
+                f"Thank you, {name}. I have noted your number as {spoken_phone}, and requested a callback for {best_time} "
+                f"regarding {reason}. The Vittoris team has been notified and will reach back to you then. Have a wonderful day!"
             )
             notification_preview = (
-                f"📱 [DISPATCHED TO {recipient.name} via {recipient.notification_channel}]\n"
+                f"📱 [DISPATCHED TO Vittoris Team via {recipient.notification_channel}]\n"
                 f"Callback Request from {name} ({phone}) for {best_time}.\n"
                 f"Reason: {reason}"
             )
 
         elif self.state == CallStateEnum.TRANSFERRING_CALL:
-            response_text = f"Connecting your call to {recipient.name}... Please remain on the line."
+            response_text = "Connecting your call to the Vittoris team... Please remain on the line."
             self.state = CallStateEnum.CALL_COMPLETED
 
         else:
             response_text = (
-                f"Your request has already been logged, {name}. {recipient.name} will reach back to you. Goodbye!"
+                f"Your request has already been logged, {name}. The Vittoris team will reach back to you. Goodbye!"
             )
             self.state = CallStateEnum.CALL_COMPLETED
 

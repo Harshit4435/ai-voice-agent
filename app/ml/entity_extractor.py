@@ -53,16 +53,27 @@ class InboundEntityExtractor:
         }
 
     def extract_name(self, text: str) -> Optional[str]:
-        """Extracts caller full name."""
+        """Extracts caller full name cleanly without capturing subsequent clauses."""
+        # Stop-boundary matching
+        boundary_pattern = re.compile(
+            r"(?:my name is|name's|this is|i am|i'm)\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?=\s+(?:calling|about|regarding|from|with|and|,|\.|$))",
+            re.IGNORECASE
+        )
+        match = boundary_pattern.search(text)
+        if match:
+            candidate = match.group(1).strip()
+            # Exclude titles if solitary or false triggers
+            if candidate.lower() not in ("a", "an", "the", "just", "calling"):
+                return candidate.title()
+
         for pattern in self._name_patterns:
             match = pattern.search(text)
             if match:
-                # Return the matching group containing the name
                 groups = [g for g in match.groups() if g]
                 if groups:
                     name_candidate = groups[-1].strip()
-                    # Clean out common trailing verbs
-                    name_candidate = re.sub(r"\s+(?:and|calling|from|regarding|to)$", "", name_candidate, flags=re.I)
+                    # Strip any trailing transition keywords
+                    name_candidate = re.split(r"\s+(?:and|calling|from|regarding|about|to|with)\b", name_candidate, flags=re.I)[0].strip()
                     if len(name_candidate.split()) >= 1 and len(name_candidate) > 2:
                         return name_candidate.title()
         return None
