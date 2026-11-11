@@ -3,239 +3,678 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inbound Call AI Agent — Intelligent Telephony Receptionist</title>
+  <title>Inbound AI Voice Receptionist — Gemini Voice</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --bg-surface: #131720;
+      --bubble-user: #1f2533;
+      --bubble-bot: #161b26;
+      --gemini-blue: #4285f4;
+      --gemini-purple: #9b72cb;
+      --gemini-pink: #d96570;
+      --gemini-cyan: #1ba0e1;
+      --text-main: #f0f4f9;
+      --text-muted: #9aa0a6;
+      --border: rgba(255, 255, 255, 0.08);
+      --green: #10b981;
+      --red: #ef4444;
+      --font-main: 'Google Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(at 50% 10%, rgba(66, 133, 244, 0.12) 0px, transparent 60%),
+        radial-gradient(at 80% 85%, rgba(155, 114, 203, 0.08) 0px, transparent 55%);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      padding: 16px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(13, 15, 20, 0.85);
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+
+    .gemini-sparkle {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #4285f4, #9b72cb, #d96570);
+      -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/></svg>') no-repeat center / contain;
+      mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/></svg>') no-repeat center / contain;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      background: linear-gradient(135deg, #fff, #c3cad5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: rgba(66, 133, 244, 0.15);
+      color: #70a7ff;
+      border: 1px solid rgba(66, 133, 244, 0.3);
+      font-weight: 600;
+    }
+
+    .recipient-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(31, 37, 51, 0.7);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 30px;
+    }
+
+    .recipient-text {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .recipient-text strong { color: #fff; }
+
+    .status-select {
+      background: #0d0f14;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .orb-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px 10px;
+    }
+
+    .gemini-orb-container {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gemini-orb {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #9b72cb 0%, #4285f4 50%, #1ba0e1 100%);
+      box-shadow: 
+        0 0 45px rgba(66, 133, 244, 0.45),
+        0 0 80px rgba(155, 114, 203, 0.3);
+      filter: blur(0.5px);
+      transition: all 0.4s ease;
+      animation: orbBreathe 4s infinite ease-in-out;
+    }
+
+    .gemini-orb.listening {
+      background: radial-gradient(circle at 40% 40%, #10b981 0%, #4285f4 60%, #06b6d4 100%);
+      box-shadow: 
+        0 0 55px rgba(16, 185, 129, 0.55),
+        0 0 90px rgba(66, 133, 244, 0.4);
+      animation: orbListen 1.4s infinite ease-in-out;
+      transform: scale(1.1);
+    }
+
+    .gemini-orb.speaking {
+      background: radial-gradient(circle at 30% 30%, #d96570 0%, #9b72cb 50%, #4285f4 100%);
+      box-shadow: 
+        0 0 60px rgba(217, 101, 112, 0.6),
+        0 0 100px rgba(155, 114, 203, 0.45);
+      animation: orbSpeak 1.6s infinite ease-in-out;
+      transform: scale(1.15);
+    }
+
+    @keyframes orbBreathe {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.05) rotate(180deg); }
+    }
+    @keyframes orbListen {
+      0%, 100% { transform: scale(1.05); }
+      50% { transform: scale(1.18); }
+    }
+    @keyframes orbSpeak {
+      0%, 100% { transform: scale(1.08) rotate(0deg); }
+      50% { transform: scale(1.22) rotate(120deg); }
+    }
+
+    .orb-status {
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .chat-container {
+      flex: 1;
+      max-width: 840px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 10px 24px 140px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+    }
+
+    .message-row {
+      display: flex;
+      gap: 14px;
+      animation: messageIn 0.3s ease forwards;
+    }
+    @keyframes messageIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-row.user { justify-content: flex-end; }
+
+    .message-avatar.bot {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #4285f4, #9b72cb);
+    }
+    .message-avatar.bot svg { width: 18px; height: 18px; fill: #fff; }
+
+    .message-bubble {
+      max-width: 78%;
+      padding: 14px 18px;
+      border-radius: 18px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .message-bubble.bot {
+      background: var(--bubble-bot);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      border-top-left-radius: 4px;
+    }
+
+    .message-bubble.user {
+      background: var(--bubble-user);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-top-right-radius: 4px;
+    }
+
+    .entity-tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .entity-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      background: rgba(66, 133, 244, 0.12);
+      color: #70a7ff;
+      border: 1px solid rgba(66, 133, 244, 0.25);
+    }
+    .entity-tag.green {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--green);
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(13, 15, 20, 0.96) 70%, transparent);
+      padding: 14px 20px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .quick-chips-row {
+      display: flex;
+      gap: 8px;
+      max-width: 840px;
+      width: 100%;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .quick-chips-row::-webkit-scrollbar { display: none; }
+
+    .quick-chip {
+      background: rgba(31, 37, 51, 0.7);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .quick-chip:hover {
+      color: #fff;
+      border-color: rgba(66, 133, 244, 0.4);
+      background: rgba(66, 133, 244, 0.12);
+    }
+
+    .input-pill {
+      max-width: 840px;
+      width: 100%;
+      background: #181d28;
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      padding: 6px 8px 6px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .input-pill:focus-within {
+      border-color: rgba(66, 133, 244, 0.5);
+      box-shadow: 0 0 20px rgba(66, 133, 244, 0.25);
+    }
+
+    .input-pill input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-family: var(--font-main);
+      font-size: 15px;
+    }
+    .input-pill input::placeholder { color: #636b77; }
+
+    .mic-button {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .mic-button:hover { background: rgba(255, 255, 255, 0.16); }
+
+    .mic-button.recording {
+      background: var(--red);
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
+      animation: pulseMic 1s infinite alternate;
+    }
+    @keyframes pulseMic { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
+
+    .mic-button svg { width: 20px; height: 20px; fill: currentColor; }
+
+    .send-button {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #4285f4, #9b72cb);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .send-button:hover { filter: brightness(1.15); }
+    .send-button svg { width: 18px; height: 18px; fill: #fff; transform: translateX(1px); }
+
+    .tts-toggle-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Top Header -->
   <header>
     <div class="brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-      </div>
-      <div class="brand-text">
-        <h1>Inbound Call AI Agent</h1>
-        <span>Automated Voice Screening, Intent Routing & Callback Capture</span>
-      </div>
+      <div class="gemini-sparkle"></div>
+      <div class="brand-title">Gemini Voice Inbound Screener</div>
+      <div class="brand-tag">AI Telephony Receptionist</div>
     </div>
 
-    <!-- Recipient Availability Switcher -->
-    <div class="recipient-control-pill">
-      <div class="recipient-info">
-        <span class="recipient-name">Recipient: Alex Mercer</span>
-        <span class="recipient-role">Lead Solutions Architect</span>
-      </div>
-      <div class="status-toggle-group">
-        <label for="recipient-status-select" class="status-label">Status:</label>
-        <select id="recipient-status-select" onchange="changeRecipientStatus(this.value)">
-          <option value="BUSY" selected>🔴 BUSY (In Meeting)</option>
-          <option value="AVAILABLE">🟢 AVAILABLE (Accept Call)</option>
-          <option value="DO_NOT_DISTURB">⛔ DO NOT DISTURB</option>
-        </select>
-      </div>
+    <div class="recipient-badge">
+      <div class="recipient-text">Recipient: <strong>Alex Mercer</strong></div>
+      <select id="recipient-status-select" class="status-select" onchange="onStatusChange(this.value)">
+        <option value="BUSY" selected>🔴 Busy (In Meeting)</option>
+        <option value="AVAILABLE">🟢 Available (Transfer Call)</option>
+      </select>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main>
-    <div class="app-layout">
-      
-      <!-- Left Column: Interactive Telephony Phone Simulator -->
-      <div class="phone-column">
-        <div class="card phone-card">
-          <div class="phone-header">
-            <div class="carrier-info">
-              <span>●●●●● Carrier</span>
-              <span id="call-timer" class="call-timer">00:00</span>
-            </div>
-            <div class="caller-id-display">
-              <div class="avatar-circle" id="phone-avatar">
-                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-              </div>
-              <h2 id="call-status-heading">Incoming Line Idle</h2>
-              <p id="call-subtitle">Click "Simulate Inbound Call" to test caller flow</p>
-            </div>
-          </div>
-
-          <!-- Waveform & Speech Indicator -->
-          <div class="waveform-box" id="waveform-box">
-            <div class="wave-bar"></div>
-            <div class="wave-bar"></div>
-            <div class="wave-bar"></div>
-            <div class="wave-bar"></div>
-            <div class="wave-bar"></div>
-            <div class="wave-bar"></div>
-            <div class="wave-bar"></div>
-            <div class="wave-bar"></div>
-          </div>
-
-          <!-- Dialogue Stream (Chat Bubbles) -->
-          <div class="dialogue-container" id="dialogue-container">
-            <div class="bubble bot">
-              <div class="bubble-meta">AI RECEPTIONIST</div>
-              <em>Line connected. Waiting for call initiation...</em>
-            </div>
-          </div>
-
-          <!-- Quick Scenario Test Prompts -->
-          <div class="quick-prompts-section">
-            <div class="section-label">Quick Test Scenarios:</div>
-            <div class="prompt-chips">
-              <button class="chip" onclick="fillPrompt('Hi, my name is John Miller and I\'m calling regarding the commercial contract proposal.')">
-                👤 Name & Reason (John Miller)
-              </button>
-              <button class="chip" onclick="fillPrompt('My phone number is 415-555-0199 and the best time to reach me is tomorrow at 2 PM.')">
-                📞 Phone & Best Time (415-555-0199)
-              </button>
-              <button class="chip" onclick="fillPrompt('This is Sarah Connor, our production database has crashed, urgent emergency!')">
-                🚨 Urgent Outage
-              </button>
-            </div>
-          </div>
-
-          <!-- Input Controls -->
-          <div class="phone-input-bar">
-            <button class="mic-btn" id="btn-mic" onclick="toggleMicRecording()" title="Speak using Microphone">
-              🎤
-            </button>
-            <input type="text" id="caller-input-text" placeholder="Type what caller speaks or use microphone..." onkeydown="handleInputKeydown(event)">
-            <button class="send-btn" id="btn-send" onclick="sendCallerTurn()">
-              Send ➢
-            </button>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="call-actions-row">
-            <button class="action-btn btn-call" id="btn-call-action" onclick="handleCallButton()">
-              📞 Simulate Inbound Call
-            </button>
-            <button class="action-btn btn-reset" onclick="resetCallSession()">
-              🔄 Reset Call
-            </button>
-            <label class="tts-toggle" title="Enable browser text-to-speech for AI Receptionist">
-              <input type="checkbox" id="tts-toggle" checked>
-              <span>🔊 Voice Audio (TTS)</span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column: State Machine Telemetry, Notifications & Model Accuracy -->
-      <div class="telemetry-column">
-        
-        <!-- Live State & Entity Inspector Card -->
-        <div class="card telemetry-card">
-          <div class="card-title-row">
-            <h3>⚙️ Call State & Extracted Entities</h3>
-            <span class="badge" id="badge-call-state">IDLE</span>
-          </div>
-
-          <!-- State Step Progress -->
-          <div class="state-stepper">
-            <div class="step-node" id="step-1">
-              <div class="step-num">1</div>
-              <div class="step-label">Greeting</div>
-            </div>
-            <div class="step-line" id="line-1"></div>
-            <div class="step-node" id="step-2">
-              <div class="step-num">2</div>
-              <div class="step-label">Screening</div>
-            </div>
-            <div class="step-line" id="line-2"></div>
-            <div class="step-node" id="step-3">
-              <div class="step-num">3</div>
-              <div class="step-label">Availability</div>
-            </div>
-            <div class="step-line" id="line-3"></div>
-            <div class="step-node" id="step-4">
-              <div class="step-num">4</div>
-              <div class="step-label">Callback / Transfer</div>
-            </div>
-          </div>
-
-          <!-- Extracted Entities Grid -->
-          <div class="entities-grid">
-            <div class="entity-item">
-              <div class="entity-label">Caller Name</div>
-              <div class="entity-val" id="val-caller-name">—</div>
-            </div>
-            <div class="entity-item">
-              <div class="entity-label">Reason for Call</div>
-              <div class="entity-val" id="val-reason">—</div>
-            </div>
-            <div class="entity-item">
-              <div class="entity-label">Callback Phone</div>
-              <div class="entity-val" id="val-phone">—</div>
-            </div>
-            <div class="entity-item">
-              <div class="entity-label">Best Time to Reach</div>
-              <div class="entity-val" id="val-time">—</div>
-            </div>
-            <div class="entity-item">
-              <div class="entity-label">Detected Intent</div>
-              <div class="entity-val" id="val-intent" style="color: var(--cyan);">—</div>
-            </div>
-            <div class="entity-item">
-              <div class="entity-label">Model Confidence</div>
-              <div class="entity-val" id="val-confidence" style="color: var(--green);">—</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Recipient Alert Feed Card -->
-        <div class="card alert-card">
-          <div class="card-title-row">
-            <h3>🔔 Live Recipient Notifications (Slack / SMS)</h3>
-            <span class="badge badge-purple" id="badge-recipient-status">RECIPIENT BUSY</span>
-          </div>
-          <div class="notification-stream" id="notification-stream">
-            <div class="notif-placeholder">
-              Notifications dispatched to recipient (Alex Mercer) will appear here in real-time.
-            </div>
-          </div>
-        </div>
-
-        <!-- Model Accuracy & Validation Metrics Card -->
-        <div class="card metrics-card">
-          <div class="card-title-row">
-            <h3>📊 Model Training Validation & Accuracy Metrics</h3>
-            <button class="refresh-metrics-btn" onclick="fetchModelMetrics()">↻ Refresh</button>
-          </div>
-
-          <div class="model-meta-bar" id="model-meta-bar">
-            <strong>Model:</strong> TF-IDF + Calibrated LinearSVC | 
-            <strong>CV Accuracy:</strong> <span style="color: var(--green); font-weight:700;">88.57%</span> | 
-            <strong>Holdout Acc:</strong> <span style="color: var(--cyan); font-weight:700;">88.46%</span>
-          </div>
-
-          <!-- Accuracy Table -->
-          <div class="table-responsive">
-            <table class="accuracy-table" id="accuracy-table">
-              <thead>
-                <tr>
-                  <th>Intent Category</th>
-                  <th>Precision</th>
-                  <th>Recall</th>
-                  <th>F1-Score</th>
-                  <th>Support</th>
-                </tr>
-              </thead>
-              <tbody id="accuracy-table-body">
-                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading model metrics...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
-
+  <div class="orb-stage">
+    <div class="gemini-orb-container">
+      <div class="gemini-orb" id="gemini-orb"></div>
     </div>
-  </main>
+    <div class="orb-status" id="orb-status">Tap the mic to talk, or type below</div>
+  </div>
 
-  <script src="/static/app.js"></script>
+  <div class="chat-container" id="chat-stream"></div>
+
+  <div class="bottom-bar">
+    <div class="quick-chips-row">
+      <button class="quick-chip" onclick="fillAndSend('Hi, my name is John Miller and I am calling regarding the commercial contract proposal.')">
+        👤 1. "My name is John Miller, calling regarding the contract"
+      </button>
+      <button class="quick-chip" onclick="fillAndSend('My phone number is 415-555-0199 and the best time to reach me is tomorrow at 2 PM.')">
+        📞 2. "My number is 415-555-0199, call back tomorrow at 2 PM"
+      </button>
+      <button class="quick-chip" onclick="fillAndSend('This is Sarah Connor, our production database is down, emergency!')">
+        🚨 3. "Emergency outage on database!"
+      </button>
+    </div>
+
+    <div class="input-pill">
+      <input type="text" id="user-input" placeholder="Speak your name and reason for calling..." onkeydown="handleKey(event)">
+      
+      <button class="mic-button" id="mic-btn" onclick="toggleMic()" title="Click to talk with your voice">
+        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+      </button>
+
+      <button class="send-button" onclick="submitUserMessage()" title="Send message">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+
+    <label class="tts-toggle-pill">
+      <input type="checkbox" id="tts-checkbox" checked>
+      <span>🔊 Voice Responses (Speaks out loud)</span>
+    </label>
+  </div>
+
+  <script>
+    let callState = "GREETING";
+    let callerEntities = { name: null, reason: null, phone: null, bestTime: null };
+    let isRecording = false;
+    let recognition = null;
+    const synth = window.speechSynthesis;
+
+    let recipient = {
+      name: "Alex Mercer",
+      status: "BUSY"
+    };
+
+    const INITIAL_GREETING = "Hello! Thank you for calling. Please state your name and the reason for your call.";
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initSpeech();
+      setTimeout(() => {
+        botSpeak(INITIAL_GREETING);
+      }, 500);
+    });
+
+    function initSpeech() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+          isRecording = true;
+          document.getElementById('mic-btn').classList.add('recording');
+          document.getElementById('gemini-orb').classList.add('listening');
+          document.getElementById('orb-status').textContent = "Listening to you...";
+        };
+
+        recognition.onresult = (e) => {
+          const transcript = e.results[0][0].transcript;
+          document.getElementById('user-input').value = transcript;
+          submitUserMessage();
+        };
+
+        recognition.onend = () => { stopMic(); };
+        recognition.onerror = () => { stopMic(); };
+      }
+    }
+
+    function toggleMic() {
+      if (!recognition) {
+        alert("Speech Recognition is not available in this browser. Please type in the input bar.");
+        return;
+      }
+      if (!isRecording) {
+        recognition.start();
+      } else {
+        recognition.stop();
+      }
+    }
+
+    function stopMic() {
+      isRecording = false;
+      document.getElementById('mic-btn').classList.remove('recording');
+      document.getElementById('gemini-orb').classList.remove('listening');
+      document.getElementById('orb-status').textContent = "Tap the mic to talk, or type below";
+    }
+
+    function onStatusChange(newStatus) {
+      recipient.status = newStatus;
+      fetch('/api/recipient/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      }).catch(() => {});
+    }
+
+    function handleKey(e) {
+      if (e.key === 'Enter') {
+        submitUserMessage();
+      }
+    }
+
+    function fillAndSend(text) {
+      document.getElementById('user-input').value = text;
+      submitUserMessage();
+    }
+
+    function submitUserMessage() {
+      const input = document.getElementById('user-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendMessage('user', text);
+      input.value = '';
+
+      fetch('/api/call/turn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: 'gemini_session_1', speech_text: text })
+      })
+      .then(res => res.json())
+      .then(data => {
+        botSpeak(data.bot_speech_response, data.extracted_entities);
+      })
+      .catch(() => {
+        processTurnLocally(text);
+      });
+    }
+
+    function processTurnLocally(text) {
+      const nameMatch = text.match(/(?:my name is|name's|this is|i am|i'm)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i)
+                     || text.match(/\b([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:here|speaking)\b/i);
+      if (nameMatch && !callerEntities.name) {
+        callerEntities.name = nameMatch[1].trim();
+      }
+
+      const reasonMatch = text.match(/(?:calling regarding|calling about|calling to discuss|calling to|regarding|about)\s+([^.,;]+)/i);
+      if (reasonMatch && !callerEntities.reason) {
+        callerEntities.reason = reasonMatch[1].trim();
+      }
+
+      const phoneMatch = text.match(/(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
+      if (phoneMatch) {
+        callerEntities.phone = phoneMatch[0].trim();
+      }
+
+      const timeMatch = text.match(/(?:best time (?:is|to call(?: me)?(?: is)?)|available)\s+([^.,;]+)/i)
+                     || text.match(/(?:tomorrow|today|monday|tuesday|wednesday|thursday|friday)\s+(?:at\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)?|morning|afternoon|evening)/i);
+      if (timeMatch) {
+        callerEntities.bestTime = timeMatch[0].trim();
+      }
+
+      const name = callerEntities.name || "there";
+      const reason = callerEntities.reason || "your call";
+
+      if (callState === "GREETING" || callState === "AWAITING_NAME_AND_REASON") {
+        if (recipient.status === "AVAILABLE") {
+          callState = "COMPLETED";
+          const botReply = `Thank you, ${name}! ${recipient.name} is available right now. Please hold on for just a moment while I transfer your call directly to discuss ${reason}.`;
+          botSpeak(botReply, callerEntities);
+        } else {
+          callState = "AWAITING_CALLBACK";
+          const botReply = `Thank you, ${name}. ${recipient.name} is currently busy in a meeting and cannot take your call right now. Could you please share your phone number and the best time for him to reach back to you?`;
+          botSpeak(botReply, callerEntities);
+        }
+      } else if (callState === "AWAITING_CALLBACK") {
+        callState = "COMPLETED";
+        const phone = callerEntities.phone || "your number";
+        const bestTime = callerEntities.bestTime || "as soon as possible";
+        const botReply = `Thank you, ${name}! I have recorded your number as ${phone} and requested a callback for ${bestTime} regarding ${reason}. ${recipient.name} has been notified and will reach back to you then. Have a wonderful day!`;
+        botSpeak(botReply, callerEntities);
+      } else {
+        const botReply = `Your request has already been logged, ${name}. ${recipient.name} will call you back. Thank you and goodbye!`;
+        botSpeak(botReply, callerEntities);
+      }
+    }
+
+    function botSpeak(text, entities = null) {
+      appendMessage('bot', text, entities);
+
+      const orb = document.getElementById('gemini-orb');
+      const status = document.getElementById('orb-status');
+
+      orb.classList.remove('listening');
+      orb.classList.add('speaking');
+      status.textContent = "Gemini is speaking...";
+
+      const ttsOn = document.getElementById('tts-checkbox').checked;
+      if (ttsOn && synth) {
+        synth.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        utterance.onend = () => {
+          orb.classList.remove('speaking');
+          status.textContent = "Tap the mic to talk, or type below";
+        };
+        utterance.onerror = () => {
+          orb.classList.remove('speaking');
+          status.textContent = "Tap the mic to talk, or type below";
+        };
+        synth.speak(utterance);
+      } else {
+        setTimeout(() => {
+          orb.classList.remove('speaking');
+          status.textContent = "Tap the mic to talk, or type below";
+        }, 1500);
+      }
+    }
+
+    function appendMessage(sender, text, entities = null) {
+      const container = document.getElementById('chat-stream');
+      const row = document.createElement('div');
+      row.className = `message-row ${sender}`;
+
+      let avatarHtml = '';
+      if (sender === 'bot') {
+        avatarHtml = `
+          <div class="message-avatar bot">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5zm4 4h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+          </div>
+        `;
+      }
+
+      let tagsHtml = '';
+      if (entities && (entities.caller_name || entities.name || entities.phone_number || entities.phone)) {
+        const n = entities.caller_name || entities.name;
+        const r = entities.reason_for_calling || entities.reason;
+        const p = entities.phone_number || entities.phone;
+        const t = entities.best_time_to_reach || entities.bestTime;
+        
+        tagsHtml = '<div class="entity-tag-list">';
+        if (n) tagsHtml += `<span class="entity-tag green">✓ Name: ${escapeHtml(n)}</span>`;
+        if (r) tagsHtml += `<span class="entity-tag">✓ Reason: ${escapeHtml(r)}</span>`;
+        if (p) tagsHtml += `<span class="entity-tag green">✓ Phone: ${escapeHtml(p)}</span>`;
+        if (t) tagsHtml += `<span class="entity-tag">✓ Time: ${escapeHtml(t)}</span>`;
+        tagsHtml += '</div>';
+      }
+
+      const bubble = `
+        <div class="message-bubble ${sender}">
+          ${escapeHtml(text)}
+          ${tagsHtml}
+        </div>
+      `;
+
+      row.innerHTML = sender === 'bot' ? (avatarHtml + bubble) : bubble;
+      container.appendChild(row);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+  </script>
 </body>
 </html>

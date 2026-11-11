@@ -23,3 +23,4 @@ class SpeechToTextService:
 
 
 stt_service = SpeechToTextService()
+
