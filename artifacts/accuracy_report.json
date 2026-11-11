@@ -1,0 +1,131 @@
+{
+  "model_name": "TF-IDF + Calibrated Linear Support Vector Classifier (LinearSVC)",
+  "timestamp_utc": "2026-11-11T23:32:39.414156+00:00",
+  "total_dataset_size": 130,
+  "train_set_size": 104,
+  "validation_set_size": 26,
+  "cross_validation_strategy": "Stratified 5-Fold Cross Validation",
+  "cv_fold_accuracies": [
+    0.9048,
+    0.8571,
+    0.8571,
+    0.8095,
+    1.0
+  ],
+  "cv_mean_accuracy": 0.8857,
+  "cv_std_accuracy": 0.0646,
+  "holdout_validation_metrics": {
+    "accuracy": 0.8846,
+    "macro_precision": 0.9056,
+    "macro_recall": 0.8833,
+    "macro_f1_score": 0.8854
+  },
+  "per_class_metrics": {
+    "CALL_STATUS_CHECK": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1_score": 0.8571,
+      "support": 4.0
+    },
+    "GENERAL_INQUIRY": {
+      "precision": 0.8,
+      "recall": 0.8,
+      "f1_score": 0.8,
+      "support": 5.0
+    },
+    "LEAVE_CALLBACK_INFO": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0,
+      "support": 4.0
+    },
+    "SCHEDULE_CALLBACK": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1_score": 0.8571,
+      "support": 4.0
+    },
+    "STATEMENT_NAME_AND_REASON": {
+      "precision": 0.8333,
+      "recall": 1.0,
+      "f1_score": 0.9091,
+      "support": 5.0
+    },
+    "URGENT_INQUIRY": {
+      "precision": 0.8,
+      "recall": 1.0,
+      "f1_score": 0.8889,
+      "support": 4.0
+    }
+  },
+  "confusion_matrix": {
+    "classes": [
+      "CALL_STATUS_CHECK",
+      "GENERAL_INQUIRY",
+      "LEAVE_CALLBACK_INFO",
+      "SCHEDULE_CALLBACK",
+      "STATEMENT_NAME_AND_REASON",
+      "URGENT_INQUIRY"
+    ],
+    "matrix": [
+      [
+        3,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        4,
+        0,
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        4,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        3,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        5,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        4
+      ]
+    ]
+  },
+  "hyperparameters": {
+    "ngram_range": [
+      1,
+      2
+    ],
+    "sublinear_tf": true,
+    "C_regularization": 2.5,
+    "max_iter": 1000,
+    "solver": "lbfgs"
+  }
+}

@@ -1,0 +1,162 @@
+"""Curated Inbound Call Intent Dataset.
+
+Balanced, high-coverage dataset with diverse conversational utterances for telephone reception,
+screening, name & reason statements, urgency indicators, and callback requests.
+"""
+from typing import List, Tuple
+
+INBOUND_INTENT_DATASET: List[Tuple[str, str]] = [
+    # =========================================================================
+    # 1. STATEMENT_NAME_AND_REASON (Caller introduces their name + purpose)
+    # =========================================================================
+    ("Hi, my name is John Miller and I'm calling regarding the commercial contract proposal.", "STATEMENT_NAME_AND_REASON"),
+    ("Hello, this is Dr. Sarah Jenkins calling to discuss the Q3 clinical research partnership.", "STATEMENT_NAME_AND_REASON"),
+    ("Good morning, my name is Carlos Ramirez. I'm calling about the enterprise software demo we discussed.", "STATEMENT_NAME_AND_REASON"),
+    ("This is Priya Sharma from Nexus Logistics, calling regarding the delayed shipment invoice.", "STATEMENT_NAME_AND_REASON"),
+    ("My name is Michael Chang and I'm calling to speak with Alex about the cloud migration project.", "STATEMENT_NAME_AND_REASON"),
+    ("Hey there, this is Marcus Vance calling regarding the job application for the senior architect role.", "STATEMENT_NAME_AND_REASON"),
+    ("Hi, Elena Rostova here, calling to follow up on our joint venture terms sheet.", "STATEMENT_NAME_AND_REASON"),
+    ("This is David O'Connor. I am calling regarding the quarterly budget review.", "STATEMENT_NAME_AND_REASON"),
+    ("Hello, my name is Jennifer Lopez and I'm calling to discuss partnership opportunities with your firm.", "STATEMENT_NAME_AND_REASON"),
+    ("Hi, this is Robert King calling to discuss the lease renewal for the downtown office.", "STATEMENT_NAME_AND_REASON"),
+    ("Good afternoon, my name is Linda Hayes and I'm calling regarding the supplier procurement agreement.", "STATEMENT_NAME_AND_REASON"),
+    ("This is Arthur Dent calling about the intergalactic infrastructure bypass proposal.", "STATEMENT_NAME_AND_REASON"),
+    ("Hi, my name is Jessica Taylor. I'm calling to speak with Alex about the frontend design sprint.", "STATEMENT_NAME_AND_REASON"),
+    ("Hello, Brandon Cole here. I'm calling regarding the data processing addendum compliance audit.", "STATEMENT_NAME_AND_REASON"),
+    ("This is Samuel Jackson, calling to discuss the licensing terms for the proprietary SDK.", "STATEMENT_NAME_AND_REASON"),
+    ("My name is Fiona Gallagher and I'm calling regarding the maintenance schedule for next week.", "STATEMENT_NAME_AND_REASON"),
+    ("Hi, this is George Clark calling about the pending vendor agreement approval.", "STATEMENT_NAME_AND_REASON"),
+    ("Hello, my name is Hannah Abbott. Calling to discuss the marketing campaign deliverables.", "STATEMENT_NAME_AND_REASON"),
+    ("This is Tyler Durden, calling regarding the chemical inventory delivery order.", "STATEMENT_NAME_AND_REASON"),
+    ("My name is Rachel Green, calling to talk with Alex about the fashion merchandising pitch.", "STATEMENT_NAME_AND_REASON"),
+    ("Hi, I am Vikram Malhotra and I am calling to discuss our upcoming software licensing contract.", "STATEMENT_NAME_AND_REASON"),
+    ("Hello, my name is Daniel Craig. I am calling regarding the executive advisory committee meeting.", "STATEMENT_NAME_AND_REASON"),
+    ("This is Wendy Rhoades calling to discuss the executive leadership coaching engagement.", "STATEMENT_NAME_AND_REASON"),
+    ("Hi, my name is Chloe Sullivan and I am calling regarding the press release quote confirmation.", "STATEMENT_NAME_AND_REASON"),
+    ("This is Lucas Scott calling to discuss the youth athletic mentorship partnership.", "STATEMENT_NAME_AND_REASON"),
+
+    # =========================================================================
+    # 2. URGENT_INQUIRY (Emergencies, system crashes, security, time-sensitive)
+    # =========================================================================
+    ("This is an emergency, our main production server cluster has completely crashed!", "URGENT_INQUIRY"),
+    ("Urgent call from Dave, we have a critical security breach detected in the auth service.", "URGENT_INQUIRY"),
+    ("Hi, it's Mark, urgent issue with the database pipeline, transactions are failing across all regions.", "URGENT_INQUIRY"),
+    ("Please connect me immediately, this is an urgent production outage affecting thousands of users.", "URGENT_INQUIRY"),
+    ("Emergency alert, our API gateway is throwing 500 errors and our client services are blocked.", "URGENT_INQUIRY"),
+    ("This is critical! Our payment processor is down and orders are dropping right now.", "URGENT_INQUIRY"),
+    ("Urgent message from IT security, we need Alex on the bridge call immediately.", "URGENT_INQUIRY"),
+    ("Code red emergency regarding the live deployment failure on the primary cluster.", "URGENT_INQUIRY"),
+    ("Urgent, the client presentation is in 15 minutes and the demonstration environment is broken.", "URGENT_INQUIRY"),
+    ("This is time-sensitive and critical, please interrupt Alex immediately regarding the server alert.", "URGENT_INQUIRY"),
+    ("High severity incident on customer cluster, urgent escalation required.", "URGENT_INQUIRY"),
+    ("Emergency downtime detected on the US-East load balancers, need immediate response.", "URGENT_INQUIRY"),
+    ("Urgent system outage, please notify the on-call lead right away.", "URGENT_INQUIRY"),
+    ("Critical priority: data corruption reported in the primary PostgreSQL database.", "URGENT_INQUIRY"),
+    ("Help, this is an urgent escalation from Tier 3 customer support, VIP account is offline.", "URGENT_INQUIRY"),
+    ("Urgent! Ransomware alert triggered on the internal developer subnet, take immediate action.", "URGENT_INQUIRY"),
+    ("Emergency escalation: the core DNS servers are unresponsive and resolving failed.", "URGENT_INQUIRY"),
+    ("Critical time-sensitive wire transfer issue, must speak with finance immediately.", "URGENT_INQUIRY"),
+    ("We have an urgent Sev-1 outage, customer data ingestion pipeline has completely halted.", "URGENT_INQUIRY"),
+    ("Immediate attention required: primary firewall has failed over with errors.", "URGENT_INQUIRY"),
+    ("Emergency call, unauthorized root access attempt detected on the bastion host.", "URGENT_INQUIRY"),
+    ("Urgent bug in production billing calculation, overcharging accounts right now.", "URGENT_INQUIRY"),
+
+    # =========================================================================
+    # 3. GENERAL_INQUIRY (Product questions, brochures, capabilities, pricing)
+    # =========================================================================
+    ("What are the pricing plans and monthly subscription tiers for your platform?", "GENERAL_INQUIRY"),
+    ("Could someone explain what features are included in your standard enterprise tier?", "GENERAL_INQUIRY"),
+    ("I have a general question about your REST API documentation and rate limit caps.", "GENERAL_INQUIRY"),
+    ("Can you provide information on your office headquarters location and operating hours?", "GENERAL_INQUIRY"),
+    ("I'm looking for general background regarding your firm's professional services.", "GENERAL_INQUIRY"),
+    ("Can you tell me how your solution compares to competitors in the market?", "GENERAL_INQUIRY"),
+    ("I wanted to understand the standard implementation timeline for a mid-market team.", "GENERAL_INQUIRY"),
+    ("What are the system and infrastructure requirements for on-premise installation?", "GENERAL_INQUIRY"),
+    ("Just calling to learn more about the products and consulting services you offer.", "GENERAL_INQUIRY"),
+    ("Do you offer custom plugins or native integrations for Salesforce and HubSpot?", "GENERAL_INQUIRY"),
+    ("I have some questions about how your recurring billing and invoicing work.", "GENERAL_INQUIRY"),
+    ("Can you email me a product brochure, datasheet, or capability overview deck?", "GENERAL_INQUIRY"),
+    ("I would like to know what developer certifications and training modules you have.", "GENERAL_INQUIRY"),
+    ("Looking for general information on your SOC2, HIPAA, and GDPR compliance posture.", "GENERAL_INQUIRY"),
+    ("What is the refund policy and SLA guarantee for your cloud subscription?", "GENERAL_INQUIRY"),
+    ("Does your platform support multi-tenant data residency across Europe and Asia?", "GENERAL_INQUIRY"),
+    ("Could you provide details on what third-party webhook integrations are supported?", "GENERAL_INQUIRY"),
+    ("I'm evaluating tools for my engineering team and would like a product overview.", "GENERAL_INQUIRY"),
+    ("Can someone tell me if you support single sign-on with Okta and Azure AD?", "GENERAL_INQUIRY"),
+    ("What programming languages have official client SDKs for your service?", "GENERAL_INQUIRY"),
+    ("Could you give me a high-level explanation of your pricing model per active user?", "GENERAL_INQUIRY"),
+    ("How does customer support ticketing work for your enterprise tier customers?", "GENERAL_INQUIRY"),
+
+    # =========================================================================
+    # 4. SCHEDULE_CALLBACK (Scheduling sync, booking meeting, requesting call)
+    # =========================================================================
+    ("I would like to schedule a 30-minute callback meeting with Alex sometime this week.", "SCHEDULE_CALLBACK"),
+    ("Can we book a time for Alex to call me back to walk through the technical specs?", "SCHEDULE_CALLBACK"),
+    ("I want to set up an appointment to discuss the upcoming Q4 rollout schedule.", "SCHEDULE_CALLBACK"),
+    ("Could Alex give me a call back tomorrow when he is free to discuss the proposal?", "SCHEDULE_CALLBACK"),
+    ("Please schedule a phone call for us to review the open architecture questions.", "SCHEDULE_CALLBACK"),
+    ("Can we arrange a callback session for Friday afternoon around 3 PM?", "SCHEDULE_CALLBACK"),
+    ("I need to book a consultation slot with the lead engineer next Tuesday.", "SCHEDULE_CALLBACK"),
+    ("Let's coordinate a convenient time for a brief 15-minute phone sync.", "SCHEDULE_CALLBACK"),
+    ("Can Alex reach back to me tomorrow morning to finalize our project timeline?", "SCHEDULE_CALLBACK"),
+    ("I would like to request an introductory callback with your solutions team.", "SCHEDULE_CALLBACK"),
+    ("Could we schedule a calendar invite or phone callback for later this afternoon?", "SCHEDULE_CALLBACK"),
+    ("Please organize a follow-up discussion whenever Alex has an open calendar slot.", "SCHEDULE_CALLBACK"),
+    ("Looking to schedule a callback to go over the revised statement of work.", "SCHEDULE_CALLBACK"),
+    ("Can we set up a discovery call for next Wednesday morning at 10 AM?", "SCHEDULE_CALLBACK"),
+    ("I'd like to reserve a time for a follow-up technical sync regarding the architecture.", "SCHEDULE_CALLBACK"),
+    ("Please book a callback window for us to finalize the vendor selection process.", "SCHEDULE_CALLBACK"),
+    ("Can someone schedule a phone review with the account executive this week?", "SCHEDULE_CALLBACK"),
+    ("I would like to arrange a callback meeting to discuss our contract renewal options.", "SCHEDULE_CALLBACK"),
+    ("Can we set a date and time for a phone conference with the implementation team?", "SCHEDULE_CALLBACK"),
+    ("Let's book a 20-minute phone check-in for tomorrow after lunch.", "SCHEDULE_CALLBACK"),
+
+    # =========================================================================
+    # 5. LEAVE_CALLBACK_INFO (Giving phone number and preferred reach-out time)
+    # =========================================================================
+    ("You can reach me at 415-555-0199, and the best time to call is tomorrow at 2 PM.", "LEAVE_CALLBACK_INFO"),
+    ("My phone number is 212-555-8932. Best time to reach back is after 4 PM today.", "LEAVE_CALLBACK_INFO"),
+    ("Sure, my number is +1 (650) 555-7821. I am free between 10 AM and 12 PM tomorrow.", "LEAVE_CALLBACK_INFO"),
+    ("Please have them call me at 312-555-4490, best time is Thursday morning.", "LEAVE_CALLBACK_INFO"),
+    ("Leave my contact: 510-555-9012, and I'll be available anytime after 3 PM.", "LEAVE_CALLBACK_INFO"),
+    ("My cell is 917-555-3211. You can call me back between 2:00 PM and 5:00 PM today.", "LEAVE_CALLBACK_INFO"),
+    ("Number is +1-408-555-6677. Best time to speak is tomorrow morning around 11 AM.", "LEAVE_CALLBACK_INFO"),
+    ("You can call me on 818-555-9921, best window is between 9 and 11 AM.", "LEAVE_CALLBACK_INFO"),
+    ("My direct line is 646-555-1234, reach out to me tomorrow afternoon.", "LEAVE_CALLBACK_INFO"),
+    ("Phone is 206-555-7744. Best time to reach me is Wednesday at 3 PM.", "LEAVE_CALLBACK_INFO"),
+    ("Call me at 718-555-6612 anytime before 5 PM today.", "LEAVE_CALLBACK_INFO"),
+    ("My contact number is 305-555-8819. Best time is Friday at 10 AM.", "LEAVE_CALLBACK_INFO"),
+    ("The number to reach me is 503-555-2244, tomorrow after lunch works best.", "LEAVE_CALLBACK_INFO"),
+    ("Reach me at 404-555-3388. Best time to talk is Monday morning at 9:30 AM.", "LEAVE_CALLBACK_INFO"),
+    ("My telephone number is 617-555-7799. I am available between 1 PM and 3 PM.", "LEAVE_CALLBACK_INFO"),
+    ("You can contact me at +1 303-555-8291. Best window is tomorrow before noon.", "LEAVE_CALLBACK_INFO"),
+    ("Give me a call at 949-555-1029. Best time is today around 4:30 PM.", "LEAVE_CALLBACK_INFO"),
+    ("My mobile number is 415-555-9988, call me anytime tomorrow afternoon.", "LEAVE_CALLBACK_INFO"),
+    ("Please call 202-555-0143. Best time to speak is Friday between 10 AM and 1 PM.", "LEAVE_CALLBACK_INFO"),
+    ("My callback number is 702-555-4512. Best time is Tuesday at 11 AM.", "LEAVE_CALLBACK_INFO"),
+    ("Reach me back at 858-555-6721, anytime after 2 PM works great.", "LEAVE_CALLBACK_INFO"),
+
+    # =========================================================================
+    # 6. CALL_STATUS_CHECK (Checking on ticket, past invoice, review progress)
+    # =========================================================================
+    ("I'm calling to check the status of my support ticket number 4821.", "CALL_STATUS_CHECK"),
+    ("Just checking in on the progress of our contract review submitted on Monday.", "CALL_STATUS_CHECK"),
+    ("Has there been any update on the invoice payment that was pending?", "CALL_STATUS_CHECK"),
+    ("Calling to see if Alex received the architectural diagrams I emailed yesterday.", "CALL_STATUS_CHECK"),
+    ("Can I get an update on the status of my job application for the DevOps position?", "CALL_STATUS_CHECK"),
+    ("I wanted to check whether the vendor procurement approval went through yet.", "CALL_STATUS_CHECK"),
+    ("Following up on the bug report filed regarding the payment webhook failure.", "CALL_STATUS_CHECK"),
+    ("Checking in to see if the revised proposal has been signed off by the board.", "CALL_STATUS_CHECK"),
+    ("Calling to get a status update on our service level agreement renegotiation.", "CALL_STATUS_CHECK"),
+    ("Just following up to verify if the account API credentials were sent out.", "CALL_STATUS_CHECK"),
+    ("Has the legal team finished reviewing our master services agreement?", "CALL_STATUS_CHECK"),
+    ("I'm following up on ticket #9823 to see if the network bug has been patched.", "CALL_STATUS_CHECK"),
+    ("Checking on the status of our software license renewal order submitted last week.", "CALL_STATUS_CHECK"),
+    ("Can you tell me if there is any update on the security vulnerability assessment?", "CALL_STATUS_CHECK"),
+    ("Just checking whether the refund request for invoice #104 has been processed.", "CALL_STATUS_CHECK"),
+    ("Calling to inquire about the current progress on our custom feature request.", "CALL_STATUS_CHECK"),
+    ("Has our cloud tenant provisioning request been completed yet?", "CALL_STATUS_CHECK"),
+    ("Following up on our email thread from Tuesday regarding the technical roadblock.", "CALL_STATUS_CHECK"),
+    ("Checking the status of the signed non-disclosure agreement sent by our counsel.", "CALL_STATUS_CHECK"),
+    ("Can I check if my account verification documents have been approved?", "CALL_STATUS_CHECK"),
+]

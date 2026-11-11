@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inbound Call AI Agent — Intelligent Telephony Receptionist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>Inbound Call AI Agent</h1>
+        <span>Automated Voice Screening, Intent Routing & Callback Capture</span>
+      </div>
+    </div>
+
+    <!-- Recipient Availability Switcher -->
+    <div class="recipient-control-pill">
+      <div class="recipient-info">
+        <span class="recipient-name">Recipient: Alex Mercer</span>
+        <span class="recipient-role">Lead Solutions Architect</span>
+      </div>
+      <div class="status-toggle-group">
+        <label for="recipient-status-select" class="status-label">Status:</label>
+        <select id="recipient-status-select" onchange="changeRecipientStatus(this.value)">
+          <option value="BUSY" selected>🔴 BUSY (In Meeting)</option>
+          <option value="AVAILABLE">🟢 AVAILABLE (Accept Call)</option>
+          <option value="DO_NOT_DISTURB">⛔ DO NOT DISTURB</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main>
+    <div class="app-layout">
+      
+      <!-- Left Column: Interactive Telephony Phone Simulator -->
+      <div class="phone-column">
+        <div class="card phone-card">
+          <div class="phone-header">
+            <div class="carrier-info">
+              <span>●●●●● Carrier</span>
+              <span id="call-timer" class="call-timer">00:00</span>
+            </div>
+            <div class="caller-id-display">
+              <div class="avatar-circle" id="phone-avatar">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+              </div>
+              <h2 id="call-status-heading">Incoming Line Idle</h2>
+              <p id="call-subtitle">Click "Simulate Inbound Call" to test caller flow</p>
+            </div>
+          </div>
+
+          <!-- Waveform & Speech Indicator -->
+          <div class="waveform-box" id="waveform-box">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
+
+          <!-- Dialogue Stream (Chat Bubbles) -->
+          <div class="dialogue-container" id="dialogue-container">
+            <div class="bubble bot">
+              <div class="bubble-meta">AI RECEPTIONIST</div>
+              <em>Line connected. Waiting for call initiation...</em>
+            </div>
+          </div>
+
+          <!-- Quick Scenario Test Prompts -->
+          <div class="quick-prompts-section">
+            <div class="section-label">Quick Test Scenarios:</div>
+            <div class="prompt-chips">
+              <button class="chip" onclick="fillPrompt('Hi, my name is John Miller and I\'m calling regarding the commercial contract proposal.')">
+                👤 Name & Reason (John Miller)
+              </button>
+              <button class="chip" onclick="fillPrompt('My phone number is 415-555-0199 and the best time to reach me is tomorrow at 2 PM.')">
+                📞 Phone & Best Time (415-555-0199)
+              </button>
+              <button class="chip" onclick="fillPrompt('This is Sarah Connor, our production database has crashed, urgent emergency!')">
+                🚨 Urgent Outage
+              </button>
+            </div>
+          </div>
+
+          <!-- Input Controls -->
+          <div class="phone-input-bar">
+            <button class="mic-btn" id="btn-mic" onclick="toggleMicRecording()" title="Speak using Microphone">
+              🎤
+            </button>
+            <input type="text" id="caller-input-text" placeholder="Type what caller speaks or use microphone..." onkeydown="handleInputKeydown(event)">
+            <button class="send-btn" id="btn-send" onclick="sendCallerTurn()">
+              Send ➢
+            </button>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="call-actions-row">
+            <button class="action-btn btn-call" id="btn-call-action" onclick="handleCallButton()">
+              📞 Simulate Inbound Call
+            </button>
+            <button class="action-btn btn-reset" onclick="resetCallSession()">
+              🔄 Reset Call
+            </button>
+            <label class="tts-toggle" title="Enable browser text-to-speech for AI Receptionist">
+              <input type="checkbox" id="tts-toggle" checked>
+              <span>🔊 Voice Audio (TTS)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: State Machine Telemetry, Notifications & Model Accuracy -->
+      <div class="telemetry-column">
+        
+        <!-- Live State & Entity Inspector Card -->
+        <div class="card telemetry-card">
+          <div class="card-title-row">
+            <h3>⚙️ Call State & Extracted Entities</h3>
+            <span class="badge" id="badge-call-state">IDLE</span>
+          </div>
+
+          <!-- State Step Progress -->
+          <div class="state-stepper">
+            <div class="step-node" id="step-1">
+              <div class="step-num">1</div>
+              <div class="step-label">Greeting</div>
+            </div>
+            <div class="step-line" id="line-1"></div>
+            <div class="step-node" id="step-2">
+              <div class="step-num">2</div>
+              <div class="step-label">Screening</div>
+            </div>
+            <div class="step-line" id="line-2"></div>
+            <div class="step-node" id="step-3">
+              <div class="step-num">3</div>
+              <div class="step-label">Availability</div>
+            </div>
+            <div class="step-line" id="line-3"></div>
+            <div class="step-node" id="step-4">
+              <div class="step-num">4</div>
+              <div class="step-label">Callback / Transfer</div>
+            </div>
+          </div>
+
+          <!-- Extracted Entities Grid -->
+          <div class="entities-grid">
+            <div class="entity-item">
+              <div class="entity-label">Caller Name</div>
+              <div class="entity-val" id="val-caller-name">—</div>
+            </div>
+            <div class="entity-item">
+              <div class="entity-label">Reason for Call</div>
+              <div class="entity-val" id="val-reason">—</div>
+            </div>
+            <div class="entity-item">
+              <div class="entity-label">Callback Phone</div>
+              <div class="entity-val" id="val-phone">—</div>
+            </div>
+            <div class="entity-item">
+              <div class="entity-label">Best Time to Reach</div>
+              <div class="entity-val" id="val-time">—</div>
+            </div>
+            <div class="entity-item">
+              <div class="entity-label">Detected Intent</div>
+              <div class="entity-val" id="val-intent" style="color: var(--cyan);">—</div>
+            </div>
+            <div class="entity-item">
+              <div class="entity-label">Model Confidence</div>
+              <div class="entity-val" id="val-confidence" style="color: var(--green);">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recipient Alert Feed Card -->
+        <div class="card alert-card">
+          <div class="card-title-row">
+            <h3>🔔 Live Recipient Notifications (Slack / SMS)</h3>
+            <span class="badge badge-purple" id="badge-recipient-status">RECIPIENT BUSY</span>
+          </div>
+          <div class="notification-stream" id="notification-stream">
+            <div class="notif-placeholder">
+              Notifications dispatched to recipient (Alex Mercer) will appear here in real-time.
+            </div>
+          </div>
+        </div>
+
+        <!-- Model Accuracy & Validation Metrics Card -->
+        <div class="card metrics-card">
+          <div class="card-title-row">
+            <h3>📊 Model Training Validation & Accuracy Metrics</h3>
+            <button class="refresh-metrics-btn" onclick="fetchModelMetrics()">↻ Refresh</button>
+          </div>
+
+          <div class="model-meta-bar" id="model-meta-bar">
+            <strong>Model:</strong> TF-IDF + Calibrated LinearSVC | 
+            <strong>CV Accuracy:</strong> <span style="color: var(--green); font-weight:700;">88.57%</span> | 
+            <strong>Holdout Acc:</strong> <span style="color: var(--cyan); font-weight:700;">88.46%</span>
+          </div>
+
+          <!-- Accuracy Table -->
+          <div class="table-responsive">
+            <table class="accuracy-table" id="accuracy-table">
+              <thead>
+                <tr>
+                  <th>Intent Category</th>
+                  <th>Precision</th>
+                  <th>Recall</th>
+                  <th>F1-Score</th>
+                  <th>Support</th>
+                </tr>
+              </thead>
+              <tbody id="accuracy-table-body">
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading model metrics...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
