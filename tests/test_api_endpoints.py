@@ -50,6 +50,42 @@ class TestAPIEndpoints(unittest.TestCase):
         # Revert to BUSY
         self.client.post("/api/recipient/status", json={"status": "BUSY"})
 
+    def test_pipecat_pipeline_endpoints(self):
+        # 1. Pipecat Status
+        status_res = self.client.get("/api/pipecat/status")
+        self.assertEqual(status_res.status_code, 200)
+        self.assertEqual(status_res.json()["status"], "active")
+        self.assertEqual(status_res.json()["engine"], "Pipecat Voice AI Framework")
+
+        # 2. Pipecat Start
+        start_res = self.client.post("/api/pipecat/start")
+        self.assertEqual(start_res.status_code, 200)
+        data = start_res.json()
+        self.assertIn("session_id", data)
+        self.assertEqual(data["current_state"], "AWAITING_NAME_AND_REASON")
+        session_id = data["session_id"]
+
+        # 3. Pipecat Turn 1
+        t1_res = self.client.post("/api/pipecat/turn", json={
+            "session_id": session_id,
+            "speech_text": "Hi this is Harshad calling for a contract"
+        })
+        self.assertEqual(t1_res.status_code, 200)
+        t1_data = t1_res.json()
+        self.assertEqual(t1_data["extracted_entities"]["caller_name"], "Harshad")
+        self.assertEqual(t1_data["extracted_entities"]["reason_for_calling"], "a contract")
+        self.assertEqual(t1_data["current_state"], "AWAITING_CALLBACK_DETAILS")
+
+        # 4. Pipecat Turn 2
+        t2_res = self.client.post("/api/pipecat/turn", json={
+            "session_id": session_id,
+            "speech_text": "My phone is 555-019-2834 and call me tomorrow at 2"
+        })
+        self.assertEqual(t2_res.status_code, 200)
+        t2_data = t2_res.json()
+        self.assertEqual(t2_data["current_state"], "CALL_COMPLETED")
+        self.assertIsNotNone(t2_data["callback_record"])
+
     def test_model_metrics_endpoint(self):
         res = self.client.get("/api/model/metrics")
         self.assertEqual(res.status_code, 200)

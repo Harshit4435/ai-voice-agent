@@ -569,10 +569,10 @@
     <div class="brand">
       <div class="gemini-sparkle"></div>
       <div>
-        <div class="brand-title">Inbound AI Voice Receptionist</div>
-        <div style="font-size: 11px; color: var(--text-muted);">Normal Inbound Call Screener & Message Intake</div>
+        <div class="brand-title">Pipecat AI Voice Agent</div>
+        <div style="font-size: 11px; color: var(--text-muted);">Inbound Voice Telephony Intake & Screener</div>
       </div>
-      <div class="brand-tag">Hands-Free Voice</div>
+      <div class="brand-tag">⚡ Pipecat AI Pipeline v1.16</div>
     </div>
 
     <div class="header-controls">
@@ -766,7 +766,7 @@
         document.getElementById('call-timer-text').textContent = `Call Active: ${mins}:${secs}`;
       }, 1000);
 
-      let url = `/api/call/start?session_id=${currentSessionId}`;
+      let url = `/api/pipecat/start?session_id=${currentSessionId}`;
 
       fetch(url, { method: 'POST' })
         .then(res => res.json())
@@ -774,8 +774,15 @@
           botSpeak(data.bot_speech_response, data.extracted_entities);
         })
         .catch(() => {
-          const fallbackGreeting = "Hello! Thank you for calling. Please state your name and the reason for your call.";
-          botSpeak(fallbackGreeting, callerEntities);
+          fetch(`/api/call/start?session_id=${currentSessionId}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+              botSpeak(data.bot_speech_response, data.extracted_entities);
+            })
+            .catch(() => {
+              const fallbackGreeting = "Hello! Thank you for calling. Please state your name and the reason for your call.";
+              botSpeak(fallbackGreeting, callerEntities);
+            });
         });
     }
 
@@ -911,8 +918,8 @@
       document.getElementById('live-transcript-text').innerHTML = `<span style="color: #60a5fa;">Processing turn: "${callerSpeech}"...</span>`;
       setVisualState('processing', 'Processing...', 'Understanding inquiry & checking availability...');
 
-      // Dispatch to FastAPI Backend
-      fetch('/api/call/turn', {
+      // Dispatch to Pipecat AI Voice Pipeline Backend
+      fetch('/api/pipecat/turn', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -925,9 +932,24 @@
         document.getElementById('live-transcript-text').innerHTML = '<span class="live-transcript-placeholder">Your voice words appear here live as you talk...</span>';
         botSpeak(data.bot_speech_response, data.extracted_entities, data.notification_preview);
       })
-      .catch(err => {
-        console.warn('Backend turn failed, executing local state engine fallback', err);
-        processTurnClientSide(callerSpeech);
+      .catch(() => {
+        fetch('/api/call/turn', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: currentSessionId,
+            speech_text: callerSpeech
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('live-transcript-text').innerHTML = '<span class="live-transcript-placeholder">Your voice words appear here live as you talk...</span>';
+          botSpeak(data.bot_speech_response, data.extracted_entities, data.notification_preview);
+        })
+        .catch(err => {
+          console.warn('Pipecat backend turn fallback to client-side pipeline', err);
+          processTurnClientSide(callerSpeech);
+        });
       });
     }
 

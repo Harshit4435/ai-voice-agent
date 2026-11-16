@@ -65,6 +65,44 @@ async def start_inbound_call(session_id: str | None = None, caller_phone: str | 
     return session.start_call(caller_phone=caller_phone)
 
 
+# --- Pipecat AI Pipeline Endpoints ---
+@app.get("/api/pipecat/status", tags=["pipecat"])
+async def get_pipecat_status() -> Dict[str, Any]:
+    """Returns Pipecat Voice Agent pipeline engine status and metadata."""
+    import pipecat
+    return {
+        "status": "active",
+        "engine": "Pipecat Voice AI Framework",
+        "version": getattr(pipecat, "__version__", "1.16.0"),
+        "features": ["barge_in", "vad", "contextual_entity_resolution", "zero_loop_guard"],
+    }
+
+
+@app.post("/api/pipecat/start", tags=["pipecat"])
+async def start_pipecat_session(session_id: str | None = None) -> Dict[str, Any]:
+    """Initializes an inbound voice session powered by Pipecat."""
+    from app.pipecat_agent import pipecat_session_manager
+    session = pipecat_session_manager.reset_session(session_id)
+    greeting = session.start()
+    return {
+        "session_id": session.session_id,
+        "current_state": "AWAITING_NAME_AND_REASON",
+        "bot_speech_response": greeting,
+        "extracted_entities": session.caller_entities.model_dump(),
+        "engine": "Pipecat AI v1.16",
+    }
+
+
+@app.post("/api/pipecat/turn", tags=["pipecat"])
+async def process_pipecat_turn(turn_input: CallerTurnInput) -> Dict[str, Any]:
+    """Executes a voice turn through Pipecat's contextual state machine pipeline."""
+    from app.pipecat_agent import pipecat_session_manager
+    session = pipecat_session_manager.get_or_create(turn_input.session_id)
+    result = session.handle_speech(turn_input.speech_text)
+    result["engine"] = "Pipecat AI v1.16"
+    return result
+
+
 @app.post("/api/session/reset", tags=["call_flow"])
 async def reset_caller_session(session_id: str | None = None) -> Dict[str, str]:
     """Explicitly resets or purges a caller session to a brand-new user state."""

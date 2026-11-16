@@ -1,9 +1,10 @@
-# AI Voice Agent 📞🤖
+# Pipecat AI Voice Agent 📞🤖
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-10b981?style=for-the-badge&logo=github)](https://harshit4435.github.io/ai-voice-agent/)
-[![Tests](https://img.shields.io/badge/Tests-24%20Passing-blue?style=for-the-badge&logo=pytest)](https://github.com/Harshit4435/ai-voice-agent)
+[![Pipecat AI](https://img.shields.io/badge/Framework-Pipecat%20AI%20v1.16-9b72cb?style=for-the-badge)](https://github.com/pipecat-ai/pipecat)
+[![Tests](https://img.shields.io/badge/Tests-25%20Passing-blue?style=for-the-badge&logo=pytest)](https://github.com/Harshit4435/ai-voice-agent)
 
-An intelligent, hands-free inbound AI voice receptionist and telephony screener with intent classification, recipient availability routing, auto-start microphone, and barge-in interruption.
+An intelligent, hands-free inbound voice receptionist powered by **Pipecat AI Framework**, featuring voice pipeline orchestration, auto-start microphone, real-time barge-in interruption, contextual intent extraction, and automated lead dispatch.
 
 🌐 **Live Server / Demo**: **[https://harshit4435.github.io/ai-voice-agent/](https://harshit4435.github.io/ai-voice-agent/)**
 
@@ -11,10 +12,9 @@ An intelligent, hands-free inbound AI voice receptionist and telephony screener 
 
 ## 🌟 Key Capabilities
 
-1. **Hands-Free AI Voice Calling Console**:
-   - Designed for voice telephony (Google Voice, SIP, Twilio).
-   - Zero typing required: pure voice conversation interface with live spoken transcripts.
-   - Dynamic animated voice orb and live audio soundwave visualizer.
+1. **Pipecat AI Pipeline Framework**:
+   - Built on `pipecat-ai` v1.16 with frame-based voice orchestration (`TranscriptionFrame`, `TTSTextFrame`, `InterruptionFrame`).
+   - Contextual conversation engine that smoothly handles caller intake without repetitive robotic loops.
 2. **Auto-Start Microphone**:
    - The microphone automatically activates when the AI finishes speaking (`utterance.onend`), enabling smooth conversational turns without touching any buttons.
 3. **Barge-in / Instant Voice Interruption**:
