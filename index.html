@@ -569,35 +569,16 @@
     <div class="brand">
       <div class="gemini-sparkle"></div>
       <div>
-        <div class="brand-title">Vittoris Inbound AI Voice Agent</div>
-        <div style="font-size: 11px; color: var(--text-muted);">Premade Telephony Screener for Google Voice</div>
+        <div class="brand-title">Inbound AI Voice Receptionist</div>
+        <div style="font-size: 11px; color: var(--text-muted);">Normal Inbound Call Screener & Message Intake</div>
       </div>
-      <div class="brand-tag">v2.4 Hands-Free</div>
+      <div class="brand-tag">Hands-Free Voice</div>
     </div>
 
     <div class="header-controls">
-      <!-- Google Voice Line / Caller ID Mode -->
-      <div class="config-pill">
-        <label>Line Caller ID:</label>
-        <select id="caller-id-select" class="config-select" onchange="onCallerIdOptionChange()">
-          <option value="+1 (555) 019-2834" selected>📞 Detected (+1 555-019-2834)</option>
-          <option value="+1 (415) 555-0199">📞 Detected (+1 415-555-0199)</option>
-          <option value="UNKNOWN">👤 Unknown / Private Line (Asks Number)</option>
-        </select>
-      </div>
-
-      <!-- Recipient Availability Target -->
-      <div class="config-pill">
-        <label>Vittoris Team:</label>
-        <select id="team-status-select" class="config-select" onchange="onTeamStatusChange(this.value)">
-          <option value="BUSY" selected>🔴 Busy (Takes Callback)</option>
-          <option value="AVAILABLE">🟢 Available (Live Transfer)</option>
-        </select>
-      </div>
-
       <!-- Reset / Brand New Caller -->
-      <button class="reset-btn" onclick="startFreshCallSession()" title="Treat as a brand new caller every time">
-        🔄 New Caller / Call Again
+      <button class="reset-btn" onclick="startFreshCallSession()" title="Start a fresh inbound call">
+        🔄 New Inbound Call
       </button>
     </div>
   </header>
@@ -606,7 +587,7 @@
     <!-- Active Telephony Banner -->
     <div class="call-status-banner">
       <div class="pulse-dot"></div>
-      <span id="call-line-badge">Google Voice Inbound Line Active: (555) 019-VITT</span>
+      <span id="call-line-badge">Inbound Line Active</span>
       <span style="opacity: 0.4;">|</span>
       <span id="call-timer-text">Call Active: 00:00</span>
     </div>
@@ -667,19 +648,16 @@
       </div>
     </div>
 
-    <!-- Quick Voice Simulation Chips (For Instant Testing / Fallback) -->
+    <!-- Quick Voice Simulation Chips: Clear 2-Step Inbound Dialogue Flow -->
     <div class="quick-voice-chips">
-      <button class="voice-chip" onclick="simulateSpokenTurn('Hi, my name is Alex and I am calling regarding the contract')">
-        🗣️ 1. "Hi, my name is Alex, calling about the contract"
+      <button class="voice-chip" onclick="simulateSpokenTurn('Hi, my name is Alex and I am calling regarding the contract proposal')">
+        🗣️ Step 1: "Hi, I'm Alex, calling about the contract proposal"
       </button>
-      <button class="voice-chip" onclick="simulateSpokenTurn('the best time would be tomorrow at 2 and my number is 555 019 2834')">
-        🗣️ 2. "Tomorrow at 2 and my number is 555 019 2834"
-      </button>
-      <button class="voice-chip" onclick="simulateSpokenTurn('the phone number is 55 50 19 28 34')">
-        🗣️ 3. "The phone number is 55 50 19 28 34"
+      <button class="voice-chip" onclick="simulateSpokenTurn('My number is 555-019-2834 and the best time to call is tomorrow at 2 PM')">
+        🗣️ Step 2: "My number is 555-019-2834, call tomorrow at 2 PM"
       </button>
       <button class="voice-chip" onclick="simulateSpokenTurn('This is Michael Chang, our cloud service is down urgent!')">
-        🚨 4. "Michael Chang, urgent outage!"
+        🚨 "Michael Chang, urgent service outage!"
       </button>
     </div>
   </main>
@@ -777,11 +755,6 @@
       document.getElementById('session-id-display').textContent = `ID: ${currentSessionId}`;
       document.getElementById('live-transcript-text').innerHTML = '<span class="live-transcript-placeholder">Your voice words appear here live as you talk...</span>';
 
-      const callerPhone = getSelectedCallerId();
-      if (callerPhone) {
-        callerEntities.phone = callerPhone;
-      }
-
       // Reset Call Timer
       clearInterval(callTimerInterval);
       callSeconds = 0;
@@ -794,9 +767,6 @@
       }, 1000);
 
       let url = `/api/call/start?session_id=${currentSessionId}`;
-      if (callerPhone) {
-        url += `&caller_phone=${encodeURIComponent(callerPhone)}`;
-      }
 
       fetch(url, { method: 'POST' })
         .then(res => res.json())
@@ -804,10 +774,7 @@
           botSpeak(data.bot_speech_response, data.extracted_entities);
         })
         .catch(() => {
-          // Fallback greeting if offline
-          const fallbackGreeting = callerPhone 
-            ? "Hello! Thank you for calling Vittoris. Please state your name and the reason for your call."
-            : "Hello! Thank you for calling Vittoris. Please state your name and the reason for your call.";
+          const fallbackGreeting = "Hello! Thank you for calling. Please state your name and the reason for your call.";
           botSpeak(fallbackGreeting, callerEntities);
         });
     }
@@ -1071,7 +1038,6 @@
         callerEntities.bestTime = timeMatch[0].trim();
       }
 
-      const teamStatus = document.getElementById('team-status-select').value;
       const name = callerEntities.name || "there";
       const reason = callerEntities.reason || "your call";
 
@@ -1084,26 +1050,24 @@
         } else if (callerEntities.name && !callerEntities.reason) {
           responseText = `Thank you, ${name}. Could you please state the reason for your call?`;
         } else {
-          responseText = `Hello! Thank you for calling Vittoris. Please state your name and the reason for your call.`;
+          responseText = `Hello! Thank you for calling. Please state your name and the reason for your call.`;
         }
-      } else if (teamStatus === 'AVAILABLE') {
-        responseText = `Thank you, ${name}. The Vittoris team is available right now. Please hold on while I connect your call directly to discuss ${reason}.`;
       } else {
-        // Team is BUSY: Check phone and callback time
+        // Name and Reason collected: now ask for phone number & best callback time
         const hasPhone = Boolean(callerEntities.phone);
         const hasTime = Boolean(callerEntities.bestTime);
 
         if (hasPhone && hasTime) {
           const spokenPhone = formatNumbersForSpeech(callerEntities.phone);
-          responseText = `Thank you, ${name}. I have noted your number as ${spokenPhone}, and requested a callback for ${callerEntities.bestTime} regarding ${reason}. The Vittoris team has been notified and will reach back to you then. Have a wonderful day!`;
-          notification = `📱 [DISPATCHED TO Vittoris Team via Slack & SMS]\nCallback Request from ${name} (${callerEntities.phone}) for ${callerEntities.bestTime}.\nReason: ${reason}`;
+          responseText = `Thank you, ${name}. I have noted your number as ${spokenPhone}, and requested a callback for ${callerEntities.bestTime} regarding ${reason}. Our team has been notified and will reach back out to you then. Have a wonderful day!`;
+          notification = `📱 [DISPATCHED TO Team via Slack & SMS]\nCallback Request from ${name} (${callerEntities.phone}) for ${callerEntities.bestTime}.\nReason: ${reason}`;
         } else if (hasPhone && !hasTime) {
           const spokenPhone = formatNumbersForSpeech(callerEntities.phone);
-          responseText = `Thank you, ${name}. I have your phone number as ${spokenPhone}. What would be the best time or window for our team to reach back to you?`;
+          responseText = `Thank you, ${name}. I have your phone number as ${spokenPhone}. What would be the best time for our team to reach back out to you?`;
         } else if (!hasPhone && hasTime) {
-          responseText = `Thank you, ${name}. We will reach back ${callerEntities.bestTime}. Could you please provide the phone number our team should call you on?`;
+          responseText = `Thank you, ${name}. We will reach back ${callerEntities.bestTime}. Could you please provide the best phone number for our team to reach out to you on?`;
         } else {
-          responseText = `Thank you, ${name}. The Vittoris team is currently busy and unavailable to take your call right now. Could you please leave your phone number and the best time for our team to reach back to you?`;
+          responseText = `Thank you, ${name}. What is the best phone number and time for our team to reach back out to you?`;
         }
       }
 

@@ -74,7 +74,7 @@ class InboundCallSession:
             self.caller_entities.phone_number = caller_phone
 
         greeting = (
-            "Hello! Thank you for calling Vittoris. Please state your name and the reason for your call."
+            "Hello! Thank you for calling. Please state your name and the reason for your call."
         )
         self.history.append({"speaker": "AI", "text": greeting})
         recipient = recipient_service.get_recipient_profile()
