@@ -202,7 +202,7 @@ class InboundCallSession:
 
                 response_text = (
                     f"Thank you, {name}. I have noted your number as {spoken_phone}, and requested a callback for {best_time} "
-                    f"regarding {reason}. The Vittoris team has been notified and will reach back to you then. Have a wonderful day!"
+                    f"regarding {reason}. The Vittoris team has been notified and will reach back to you then. Have a wonderful day! Goodbye."
                 )
                 notification_preview = (
                     f"📱 [DISPATCHED TO Vittoris Team via {recipient.notification_channel}]\n"
@@ -254,6 +254,7 @@ class InboundCallSession:
             intent_analysis=self.latest_intent,
             callback_record=self.callback_record,
             notification_preview=notification_preview,
+            hang_up=self.state == CallStateEnum.CALL_COMPLETED,
         )
 
 

@@ -88,4 +88,5 @@ class CallTurnResponse(BaseModel):
     intent_analysis: Optional[IntentClassificationResult] = None
     callback_record: Optional[CallbackRecord] = None
     notification_preview: Optional[str] = None
+    hang_up: bool = False
 

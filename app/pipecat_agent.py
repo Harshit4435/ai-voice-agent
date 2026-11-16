@@ -106,6 +106,24 @@ class PipecatInboundSession:
                 clean_phone = entity_extractor.extract_phone(text) or text.strip().rstrip(".!?")
                 self.caller_entities.phone_number = clean_phone
 
+        # Check for caller hangup request / goodbye
+        if re.search(r"\b(bye|goodbye|hang up|hung up|that's all|that is all|end call)\b", text, re.I):
+            if has_name and self.caller_entities.phone_number and self.caller_entities.reason_for_calling:
+                return self._finalize_callback(name, reason)
+            else:
+                self.state = CallStateEnum.CALL_COMPLETED
+                bot_text = f"Thank you for calling{', ' + name if has_name else ''}. Have a wonderful day! Goodbye."
+                self.history.append({"speaker": "AI", "text": bot_text})
+                return {
+                    "session_id": self.session_id,
+                    "current_state": "CALL_COMPLETED",
+                    "bot_speech_response": bot_text,
+                    "extracted_entities": self.caller_entities.model_dump(),
+                    "notification_preview": None,
+                    "callback_record": None,
+                    "hang_up": True,
+                }
+
         name = self.caller_entities.caller_name or "there"
         reason = self.caller_entities.reason_for_calling or "your inquiry"
         notification_preview: Optional[str] = None
@@ -181,7 +199,7 @@ class PipecatInboundSession:
 
         bot_text = (
             f"Thank you, {name}. I have noted your number as {spoken_phone}, and requested a callback for "
-            f"{best_time} regarding {reason}. The team has been notified and will reach back out to you then. Have a wonderful day!"
+            f"{best_time} regarding {reason}. The team has been notified and will reach back out to you then. Have a wonderful day! Goodbye."
         )
         notif = (
             f"📱 [DISPATCHED TO Team via Slack & SMS]\n"
@@ -196,6 +214,7 @@ class PipecatInboundSession:
             "extracted_entities": self.caller_entities.model_dump(),
             "notification_preview": notif,
             "callback_record": record.model_dump(),
+            "hang_up": True,
         }
 
 
@@ -215,6 +234,8 @@ class PipecatInboundProcessor(FrameProcessor):
             reply = result["bot_speech_response"]
             await self.push_frame(TTSTextFrame(reply, text_type="sentence"))
             await self.push_frame(TextFrame(reply))
+            if result.get("hang_up") or result.get("current_state") == "CALL_COMPLETED":
+                await self.push_frame(EndFrame())
         elif isinstance(frame, InterruptionFrame):
             # Barge-in event from Pipecat VAD
             logger.info("Pipecat barge-in: caller interrupted AI speech")

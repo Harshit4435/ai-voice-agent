@@ -786,14 +786,60 @@
         });
     }
 
-    function hangUpCall() {
+    function playDisconnectTone() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(425, ctx.currentTime);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+      } catch (e) {
+        // AudioContext ignored
+      }
+    }
+
+    function appendHangUpNotice() {
+      const container = document.getElementById('turns-container');
+      if (!container) return;
+      const banner = document.createElement('div');
+      banner.style.textAlign = 'center';
+      banner.style.margin = '16px auto';
+      banner.style.padding = '8px 18px';
+      banner.style.borderRadius = '20px';
+      banner.style.background = 'rgba(239, 68, 68, 0.12)';
+      banner.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+      banner.style.color = '#f87171';
+      banner.style.fontSize = '12px';
+      banner.style.fontWeight = '500';
+      banner.style.maxWidth = '420px';
+      banner.innerHTML = '📞 <strong>Call Hung Up</strong> • Intake Completed & Dispatched';
+      container.appendChild(banner);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    function hangUpCall(autoEnded = false) {
       isCallActive = false;
       clearInterval(callTimerInterval);
       if (synth && synth.speaking) synth.cancel();
       stopListening();
 
-      setVisualState('idle', 'Call Ended', 'The inbound call has concluded. Tap "Restart Inbound Call" for a new caller.');
-      document.getElementById('call-timer-text').textContent = "Call Concluded";
+      if (autoEnded) {
+        playDisconnectTone();
+        setVisualState('idle', 'Call Concluded & Hung Up 📞', 'All details were recorded and dispatched. The AI has hung up the call.');
+        document.getElementById('call-timer-text').textContent = "Call Concluded (Hung Up)";
+        appendHangUpNotice();
+      } else {
+        setVisualState('idle', 'Call Ended', 'The inbound call has concluded. Tap "Call Vittoris Reception" to start a new caller session.');
+        document.getElementById('call-timer-text').textContent = "Call Concluded";
+      }
     }
 
     // --- Web Speech Recognition & Auto-Mic Start with Barge-in ---
@@ -930,7 +976,8 @@
       .then(res => res.json())
       .then(data => {
         document.getElementById('live-transcript-text').innerHTML = '<span class="live-transcript-placeholder">Your voice words appear here live as you talk...</span>';
-        botSpeak(data.bot_speech_response, data.extracted_entities, data.notification_preview);
+        const shouldHangUp = Boolean(data.hang_up || data.current_state === 'CALL_COMPLETED');
+        botSpeak(data.bot_speech_response, data.extracted_entities, data.notification_preview, shouldHangUp);
       })
       .catch(() => {
         fetch('/api/call/turn', {
@@ -944,7 +991,8 @@
         .then(res => res.json())
         .then(data => {
           document.getElementById('live-transcript-text').innerHTML = '<span class="live-transcript-placeholder">Your voice words appear here live as you talk...</span>';
-          botSpeak(data.bot_speech_response, data.extracted_entities, data.notification_preview);
+          const shouldHangUp = Boolean(data.hang_up || data.current_state === 'CALL_COMPLETED');
+          botSpeak(data.bot_speech_response, data.extracted_entities, data.notification_preview, shouldHangUp);
         })
         .catch(err => {
           console.warn('Pipecat backend turn fallback to client-side pipeline', err);
@@ -960,7 +1008,7 @@
     }
 
     // --- AI Voice Output with Auto-Mic Resumption & Barge-In Binding ---
-    function botSpeak(speechText, entities = null, notification = null) {
+    function botSpeak(speechText, entities = null, notification = null, shouldHangUp = false) {
       appendTurnToLedger('bot', speechText, entities, notification);
 
       setVisualState('speaking', 'Vittoris AI is Speaking...', 'Barge-in enabled: start talking anytime to interrupt.');
@@ -974,9 +1022,11 @@
         utterance.rate = 0.96; // Smooth, conversational pace
         utterance.pitch = 1.0;
 
-        // When the AI finishes speaking -> AUTOMATICALLY START THE MICROPHONE!
+        // When the AI finishes speaking
         utterance.onend = () => {
-          if (isCallActive && isMicEnabled) {
+          if (shouldHangUp) {
+            hangUpCall(true);
+          } else if (isCallActive && isMicEnabled) {
             setVisualState('listening', 'Listening to You...', 'Your microphone is active. Please state your details or questions.');
             startListeningSafely();
           } else {
@@ -985,7 +1035,9 @@
         };
 
         utterance.onerror = () => {
-          if (isCallActive && isMicEnabled) {
+          if (shouldHangUp) {
+            hangUpCall(true);
+          } else if (isCallActive && isMicEnabled) {
             startListeningSafely();
           }
         };
@@ -994,7 +1046,9 @@
       } else {
         // Fallback when speech synthesis is unsupported
         setTimeout(() => {
-          if (isCallActive && isMicEnabled) {
+          if (shouldHangUp) {
+            hangUpCall(true);
+          } else if (isCallActive && isMicEnabled) {
             startListeningSafely();
           }
         }, 1500);
@@ -1084,6 +1138,13 @@
         }
       }
 
+      // Check for caller hangup request / goodbye
+      if (/\b(bye|goodbye|hang up|hung up|that's all|that is all|end call)\b/i.test(text)) {
+        const farewell = `Thank you for calling${callerEntities.name ? ', ' + callerEntities.name : ''}. Have a wonderful day! Goodbye.`;
+        botSpeak(farewell, callerEntities, null, true);
+        return;
+      }
+
       // Extract Best Time
       const timeMatch = text.match(/(?:best time (?:is|to call(?: me)?(?: is)?|would be)|available)\s+([^.,;]+)/i)
                      || text.match(/(?:tomorrow|today|monday|tuesday|wednesday|thursday|friday)\s+(?:at\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)?|morning|afternoon|evening)/i);
@@ -1096,6 +1157,7 @@
 
       let responseText = "";
       let notification = null;
+      let isHangUp = false;
 
       if (!callerEntities.name || !callerEntities.reason) {
         if (!callerEntities.name && callerEntities.reason) {
@@ -1116,8 +1178,9 @@
 
         if (hasPhone && hasTime) {
           const spokenPhone = formatNumbersForSpeech(callerEntities.phone);
-          responseText = `Thank you, ${name}. I have noted your number as ${spokenPhone}, and requested a callback for ${callerEntities.bestTime} regarding ${reason}. Our team has been notified and will reach back out to you then. Have a wonderful day!`;
+          responseText = `Thank you, ${name}. I have noted your number as ${spokenPhone}, and requested a callback for ${callerEntities.bestTime} regarding ${reason}. Our team has been notified and will reach back out to you then. Have a wonderful day! Goodbye.`;
           notification = `📱 [DISPATCHED TO Team via Slack & SMS]\nCallback Request from ${name} (${callerEntities.phone}) for ${callerEntities.bestTime}.\nReason: ${reason}`;
+          isHangUp = true;
         } else if (hasPhone && !hasTime) {
           const spokenPhone = formatNumbersForSpeech(callerEntities.phone);
           responseText = `Thank you, ${name}. I have your phone number as ${spokenPhone}. What would be the best time for our team to reach back out to you?`;
@@ -1128,7 +1191,7 @@
         }
       }
 
-      botSpeak(responseText, callerEntities, notification);
+      botSpeak(responseText, callerEntities, notification, isHangUp);
     }
 
     // --- UI Helper Functions ---

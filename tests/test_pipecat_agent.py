@@ -76,6 +76,17 @@ def test_pipecat_phone_number_spaced_digits_and_completion():
     assert res2["extracted_entities"]["best_time_to_reach"] == "tomorrow at 2"
     assert res2["callback_record"] is not None
     assert "Have a wonderful day" in res2["bot_speech_response"]
+    assert res2["hang_up"] is True
+    assert "Goodbye" in res2["bot_speech_response"]
+
+
+def test_pipecat_caller_says_goodbye_hangs_up():
+    session = PipecatInboundSession()
+    session.start()
+    res = session.handle_speech("goodbye, thank you")
+    assert res["hang_up"] is True
+    assert res["current_state"] == CallStateEnum.CALL_COMPLETED.value
+    assert "Goodbye" in res["bot_speech_response"]
 
 
 def test_pipecat_format_digits_for_tts():
