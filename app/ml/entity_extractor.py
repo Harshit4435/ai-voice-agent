@@ -24,9 +24,11 @@ class InboundEntityExtractor:
 
         # 2. Reason patterns
         self._reason_patterns = [
-            re.compile(r"(?:calling regarding|calling about|calling to discuss|calling to)\s+([^.,;]+)", re.IGNORECASE),
-            re.compile(r"(?:inquire about|follow up on|discuss|checking on|inquiry about)\s+([^.,;]+)", re.IGNORECASE),
-            re.compile(r"(?:reason for calling is|regarding|about)\s+([^.,;]+)", re.IGNORECASE),
+            re.compile(r"(?:the reason for the call is|reason for calling is|reason for the call is|reason is)\s+([^.,;]+)", re.IGNORECASE),
+            re.compile(r"(?:calling regarding|calling about|calling to discuss|calling to|calling for)\s+([^.,;]+)", re.IGNORECASE),
+            re.compile(r"(?:inquire about|follow up on|discuss|checking on|inquiry about|interested in)\s+([^.,;]+)", re.IGNORECASE),
+            re.compile(r"(?:i want to have|i want to|i need to|i'd like to|looking for|looking to)\s+([^.,;]+)", re.IGNORECASE),
+            re.compile(r"(?:regarding|about|for a|for an|for)\s+([A-Za-z0-9\s]{3,40})(?:\.|\?|!|,|$)", re.IGNORECASE),
         ]
 
         # 3. Phone patterns (E.164, North American NANP, standard formats)

@@ -11,6 +11,7 @@ Orchestrates telephony dialogue turns:
 from __future__ import annotations
 
 import logging
+import re
 import uuid
 from typing import Dict, Optional
 
@@ -117,6 +118,16 @@ class InboundCallSession:
 
         has_name = bool(self.caller_entities.caller_name)
         has_reason = bool(self.caller_entities.reason_for_calling)
+
+        # Contextual reason capture: if caller was prompted for reason and responds with substantive words (and didn't just give name)
+        if has_name and not has_reason and not new_entities.caller_name:
+            clean_speech = caller_text.strip().rstrip(".!?")
+            if clean_speech.lower() not in ("hello", "hi", "hey", "yes", "no"):
+                stripped = re.sub(r"^(?:the\s+)?reason\s+(?:for\s+(?:the\s+)?call\s+)?is\s+", "", clean_speech, flags=re.I).strip()
+                if len(stripped) > 2:
+                    self.caller_entities.reason_for_calling = stripped
+                    has_reason = True
+
         name = self.caller_entities.caller_name or "there"
         reason = self.caller_entities.reason_for_calling or "your inquiry"
 

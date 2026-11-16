@@ -1012,17 +1012,43 @@
     function processTurnClientSide(text) {
       const lower = text.toLowerCase();
 
-      // Extract Name
-      const nameMatch = text.match(/(?:my name is|name's|this is|i am|i'm)\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?=\s+(?:calling|about|regarding|from|with|and|,|\.|$))/i)
+      // Extract Name (stop cleanly before 'calling', 'about', 'for', etc.)
+      const nameMatch = text.match(/(?:my name is|name's|this is|i am|i'm)\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?=\s+(?:calling|about|regarding|for|from|with|and|,|\.|$))/i)
                      || text.match(/\b([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:here|speaking)\b/i);
       if (nameMatch && (!callerEntities.name || /name|this is|i am/i.test(text))) {
         callerEntities.name = nameMatch[1].trim();
       }
 
-      // Extract Reason
-      const reasonMatch = text.match(/(?:calling regarding|calling about|calling to discuss|calling to|regarding|about)\s+([^.,;]+)/i);
-      if (reasonMatch && !callerEntities.reason) {
-        callerEntities.reason = reasonMatch[1].trim();
+      // Extract Reason across common spoken patterns
+      const reasonPatterns = [
+        /(?:the reason for the call is|reason for calling is|reason for the call is|reason is)\s+([^.,;]+)/i,
+        /(?:calling regarding|calling about|calling to discuss|calling to|calling for)\s+([^.,;]+)/i,
+        /(?:inquire about|follow up on|discuss|checking on|inquiry about|interested in)\s+([^.,;]+)/i,
+        /(?:i want to have|i want to|i need to|i'd like to|looking for|looking to)\s+([^.,;]+)/i,
+        /(?:regarding|about|for a|for an)\s+([A-Za-z0-9\s]{3,40})/i
+      ];
+
+      if (!callerEntities.reason) {
+        for (const pat of reasonPatterns) {
+          const m = text.match(pat);
+          if (m && m[1] && m[1].trim().length > 2) {
+            callerEntities.reason = m[1].trim();
+            break;
+          }
+        }
+      }
+
+      // Contextual reason capture: if caller was already prompted for reason, capture whatever they state
+      if (callerEntities.name && !callerEntities.reason) {
+        const clean = text.trim().replace(/[.!?]+$/, '');
+        if (!/^(hello|hi|hey|yes|no)$/i.test(clean) && clean.length > 2) {
+          const stripped = clean.replace(/^(?:the\s+)?reason\s+(?:for\s+(?:the\s+)?call\s+)?is\s+/i, '')
+                                .replace(/^i\s+(?:just\s+)?(?:want|need)\s+(?:to\s+)?/i, '')
+                                .trim();
+          if (stripped.length > 2) {
+            callerEntities.reason = stripped;
+          }
+        }
       }
 
       // Extract Phone (Robust multi-group / space extractor)
@@ -1048,7 +1074,11 @@
         if (!callerEntities.name && callerEntities.reason) {
           responseText = `Thank you for reaching out regarding ${reason}. May I please have your name before we continue?`;
         } else if (callerEntities.name && !callerEntities.reason) {
-          responseText = `Thank you, ${name}. Could you please state the reason for your call?`;
+          if (/^(hello|hi|hey)$/i.test(text.trim())) {
+            responseText = `Hello, ${name}! I'm listening. Could you please share the reason for your call so our team can assist you?`;
+          } else {
+            responseText = `Thank you, ${name}. Could you please state the reason for your call?`;
+          }
         } else {
           responseText = `Hello! Thank you for calling. Please state your name and the reason for your call.`;
         }
