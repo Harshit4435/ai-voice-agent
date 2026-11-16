@@ -1014,18 +1014,18 @@
       }).join(' ');
 
       // Match after keywords
-      const kwMatch = normalized.match(/(?:phone|number|call|reach|contact)(?:\s+is|\s+at|\s+on)?\s*([+\d\s\-\(\)\.]{7,30})/i);
+      const kwMatch = normalized.match(/(?:phone|number|call|reach|contact)(?:\s+is|\s+at|\s+on)?\s*([+\d\s\-\(\)\.]{7,32})/i);
       if (kwMatch) {
         const digits = kwMatch[1].replace(/\D/g, '');
-        if (digits.length >= 10) return kwMatch[1].trim();
+        if (digits.length >= 7) return kwMatch[1].trim();
       }
 
-      // Match any 10-15 digit string with spaces/hyphens
-      const digitSeqs = normalized.match(/(?:\+?\d[\d\s\-\(\)\.]{8,}\d)/g);
+      // Match any 7-16 digit string with spaces/hyphens
+      const digitSeqs = normalized.match(/(?:\+?\d[\d\s\-\(\)\.]{5,}\d)/g);
       if (digitSeqs) {
         for (const seq of digitSeqs) {
           const d = seq.replace(/\D/g, '');
-          if (d.length >= 10 && d.length <= 15) return seq.trim();
+          if (d.length >= 7 && d.length <= 16) return seq.trim();
         }
       }
       return null;
@@ -1077,6 +1077,11 @@
       const phoneFound = extractClientPhone(text);
       if (phoneFound) {
         callerEntities.phone = phoneFound;
+      } else if (!callerEntities.phone) {
+        const rawDigits = text.replace(/\D/g, '');
+        if (rawDigits.length >= 7 && rawDigits.length <= 16) {
+          callerEntities.phone = text.trim().replace(/[.!?]+$/, '');
+        }
       }
 
       // Extract Best Time

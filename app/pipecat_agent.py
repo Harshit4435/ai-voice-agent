@@ -99,6 +99,13 @@ class PipecatInboundSession:
                     self.caller_entities.reason_for_calling = stripped
                     has_reason = True
 
+        # Contextual phone capture: if waiting for phone number and caller supplies digits
+        if not self.caller_entities.phone_number:
+            raw_digits = re.sub(r"\D", "", text)
+            if 7 <= len(raw_digits) <= 16:
+                clean_phone = entity_extractor.extract_phone(text) or text.strip().rstrip(".!?")
+                self.caller_entities.phone_number = clean_phone
+
         name = self.caller_entities.caller_name or "there"
         reason = self.caller_entities.reason_for_calling or "your inquiry"
         notification_preview: Optional[str] = None
@@ -206,7 +213,7 @@ class PipecatInboundProcessor(FrameProcessor):
             text = frame.text
             result = self.session.handle_speech(text)
             reply = result["bot_speech_response"]
-            await self.push_frame(TTSTextFrame(reply))
+            await self.push_frame(TTSTextFrame(reply, text_type="sentence"))
             await self.push_frame(TextFrame(reply))
         elif isinstance(frame, InterruptionFrame):
             # Barge-in event from Pipecat VAD
@@ -222,12 +229,29 @@ class PipecatSessionManager:
     def __init__(self) -> None:
         self._sessions: Dict[str, PipecatInboundSession] = {}
 
+    @property
+    def sessions(self) -> Dict[str, PipecatInboundSession]:
+        return self._sessions
+
     def get_or_create(self, session_id: Optional[str] = None) -> PipecatInboundSession:
         if not session_id or session_id not in self._sessions:
             sess = PipecatInboundSession(session_id=session_id)
             self._sessions[sess.session_id] = sess
             return sess
         return self._sessions[session_id]
+
+    def create_session(self) -> tuple[PipecatInboundSession, str]:
+        sess = self.get_or_create()
+        greeting = sess.start()
+        return sess, greeting
+
+    def process_speech(self, session_id: str, text: str) -> Dict[str, Any]:
+        sess = self.get_or_create(session_id)
+        return sess.handle_speech(text)
+
+    def reset_session(self, session_id: str) -> None:
+        if session_id in self._sessions:
+            del self._sessions[session_id]
 
     def reset_session(self, session_id: Optional[str] = None) -> PipecatInboundSession:
         sess = PipecatInboundSession(session_id=session_id)

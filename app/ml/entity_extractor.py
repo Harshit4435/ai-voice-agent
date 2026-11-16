@@ -17,7 +17,7 @@ class InboundEntityExtractor:
     def __init__(self) -> None:
         # 1. Name patterns
         self._name_patterns = [
-            re.compile(r"(?:my name is|name's|this is|i am|i'm)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)", re.IGNORECASE),
+            re.compile(r"(?:my name is|name's|this is|i am|i'm)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)", re.IGNORECASE),
             re.compile(r"(?:this is)\s+(Dr\.|Mr\.|Mrs\.|Ms\.)?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)", re.IGNORECASE),
             re.compile(r"\b([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:here|speaking)\b", re.IGNORECASE),
         ]
@@ -62,7 +62,7 @@ class InboundEntityExtractor:
         }
         # Stop-boundary matching
         boundary_pattern = re.compile(
-            r"(?:my name is|name's|this is|i am|i'm)\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?=\s+(?:calling|about|regarding|from|with|and|,|\.|$))",
+            r"(?:my name is|name's|this is|i am|i'm)\s+(?:(?:Dr|Mr|Mrs|Ms)\.?\s+)?([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?=\s*(?:calling|about|regarding|for|from|with|and|,|\.|$))",
             re.IGNORECASE
         )
         match = boundary_pattern.search(text)
@@ -125,15 +125,15 @@ class InboundEntityExtractor:
         if match:
             candidate = match.group(1).strip().rstrip(".,;:!?")
             digits = re.sub(r"\D", "", candidate)
-            if len(digits) >= 10:
+            if len(digits) >= 7:
                 return candidate[:24].rstrip(".,;:!?")
 
         # 3. Match any sequence with digits and space/hyphen/dot separators
-        digit_seqs = re.findall(r"(?:\+?\d[\d\s\-\(\)\.]{8,}\d)", normalized_text)
+        digit_seqs = re.findall(r"(?:\+?\d[\d\s\-\(\)\.]{5,}\d)", normalized_text)
         for seq in digit_seqs:
             clean_seq = seq.strip().rstrip(".,;:!?")
             digits = re.sub(r"\D", "", clean_seq)
-            if 10 <= len(digits) <= 15:
+            if 7 <= len(digits) <= 16:
                 return clean_seq
 
         # 4. Fallback to simple phone pattern
@@ -141,7 +141,7 @@ class InboundEntityExtractor:
         if match:
             raw_phone = match.group(0).strip().rstrip(".,;:!?")
             digits = re.sub(r"\D", "", raw_phone)
-            if len(digits) >= 10:
+            if len(digits) >= 7:
                 return raw_phone
         return None
 

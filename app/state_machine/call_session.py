@@ -128,6 +128,13 @@ class InboundCallSession:
                     self.caller_entities.reason_for_calling = stripped
                     has_reason = True
 
+        # Contextual phone capture: if waiting for phone number and caller supplies digits
+        if not self.caller_entities.phone_number:
+            raw_digits = re.sub(r"\D", "", caller_text)
+            if 7 <= len(raw_digits) <= 16:
+                clean_phone = entity_extractor.extract_phone(caller_text) or caller_text.strip().rstrip(".!?")
+                self.caller_entities.phone_number = clean_phone
+
         name = self.caller_entities.caller_name or "there"
         reason = self.caller_entities.reason_for_calling or "your inquiry"
 
