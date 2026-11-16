@@ -54,6 +54,10 @@ class InboundEntityExtractor:
 
     def extract_name(self, text: str) -> Optional[str]:
         """Extracts caller full name cleanly without capturing subsequent clauses."""
+        stop_words = {
+            "a", "an", "the", "just", "calling", "interested", "trying", "reaching",
+            "wondering", "looking", "here", "speaking", "leaving", "regarding", "about"
+        }
         # Stop-boundary matching
         boundary_pattern = re.compile(
             r"(?:my name is|name's|this is|i am|i'm)\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?=\s+(?:calling|about|regarding|from|with|and|,|\.|$))",
@@ -63,8 +67,10 @@ class InboundEntityExtractor:
         if match:
             candidate = match.group(1).strip()
             # Exclude titles if solitary or false triggers
-            if candidate.lower() not in ("a", "an", "the", "just", "calling"):
-                return candidate.title()
+            if candidate.lower() not in stop_words:
+                words = candidate.split()
+                if not any(w.lower() in stop_words for w in words):
+                    return candidate.title()
 
         for pattern in self._name_patterns:
             match = pattern.search(text)
@@ -75,7 +81,8 @@ class InboundEntityExtractor:
                     # Strip any trailing transition keywords
                     name_candidate = re.split(r"\s+(?:and|calling|from|regarding|about|to|with)\b", name_candidate, flags=re.I)[0].strip()
                     if len(name_candidate.split()) >= 1 and len(name_candidate) > 2:
-                        return name_candidate.title()
+                        if name_candidate.lower() not in stop_words and not any(w.lower() in stop_words for w in name_candidate.split()):
+                            return name_candidate.title()
         return None
 
     def extract_reason(self, text: str) -> Optional[str]:
@@ -91,10 +98,46 @@ class InboundEntityExtractor:
         return None
 
     def extract_phone(self, text: str) -> Optional[str]:
-        """Extracts standard telephone numbers."""
+        """Extracts standard or spoken telephone numbers across international and space-separated formats."""
+        word_to_digit = {
+            "zero": "0", "oh": "0", "one": "1", "two": "2", "three": "3",
+            "four": "4", "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9"
+        }
+        # 1. Normalize spoken word digits like 'nine zero one five'
+        tokens = text.lower().split()
+        normalized_words = []
+        for t in tokens:
+            clean = re.sub(r"[^\w]", "", t)
+            if clean in word_to_digit:
+                normalized_words.append(word_to_digit[clean])
+            else:
+                normalized_words.append(t)
+        normalized_text = " ".join(normalized_words)
+
+        # 2. Match after explicit keywords like 'my number is', 'phone is', etc.
+        kw_pattern = re.compile(
+            r"(?:phone(?:\s+number)?|number(?:\s+is)?|call(?:\s+me)?(?:\s+at|\s+on)?|reach(?:\s+me)?(?:\s+at|\s+on)?|contact)\s*(?:is|:)?\s*([+\d\s\-\(\)\.]{7,32})",
+            re.IGNORECASE
+        )
+        match = kw_pattern.search(normalized_text)
+        if match:
+            candidate = match.group(1).strip().rstrip(".,;:!?")
+            digits = re.sub(r"\D", "", candidate)
+            if len(digits) >= 10:
+                return candidate[:24].rstrip(".,;:!?")
+
+        # 3. Match any sequence with digits and space/hyphen/dot separators
+        digit_seqs = re.findall(r"(?:\+?\d[\d\s\-\(\)\.]{8,}\d)", normalized_text)
+        for seq in digit_seqs:
+            clean_seq = seq.strip().rstrip(".,;:!?")
+            digits = re.sub(r"\D", "", clean_seq)
+            if 10 <= len(digits) <= 15:
+                return clean_seq
+
+        # 4. Fallback to simple phone pattern
         match = self._simple_phone_pattern.search(text)
         if match:
-            raw_phone = match.group(0).strip()
+            raw_phone = match.group(0).strip().rstrip(".,;:!?")
             digits = re.sub(r"\D", "", raw_phone)
             if len(digits) >= 10:
                 return raw_phone

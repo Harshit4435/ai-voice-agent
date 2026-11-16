@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inbound AI Voice Receptionist — Vittoris Team</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090b10;
+      --panel: #111520;
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --bubble-bot: #141926;
+      --bubble-user: #1d2538;
+      --gemini-blue: #4285f4;
+      --gemini-purple: #9b72cb;
+      --gemini-pink: #d96570;
+      --gemini-gradient: linear-gradient(135deg, #4285f4, #9b72cb, #d96570);
+      --green: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --text-main: #f3f6fc;
+      --text-muted: #9aa2b4;
+      --font-main: 'Google Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(at 50% 0%, rgba(66, 133, 244, 0.14) 0px, transparent 55%),
+        radial-gradient(at 85% 85%, rgba(155, 114, 203, 0.09) 0px, transparent 50%),
+        radial-gradient(at 15% 90%, rgba(16, 185, 129, 0.06) 0px, transparent 40%);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--panel-border);
+      backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(9, 11, 16, 0.92);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+
+    .gemini-sparkle {
+      width: 28px;
+      height: 28px;
+      background: var(--gemini-gradient);
+      -webkit-mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/></svg>') no-repeat center / contain;
+      mask: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/></svg>') no-repeat center / contain;
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      background: linear-gradient(135deg, #ffffff, #c7d2e3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: rgba(66, 133, 244, 0.15);
+      color: #7bb0ff;
+      border: 1px solid rgba(66, 133, 244, 0.3);
+      font-weight: 600;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .config-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(22, 27, 38, 0.9);
+      border: 1px solid var(--panel-border);
+      padding: 5px 12px;
+      border-radius: 24px;
+      font-size: 12px;
+    }
+    .config-pill label {
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .config-select {
+      background: #090b10;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 16px;
+      font-size: 11px;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .reset-btn {
+      background: rgba(66, 133, 244, 0.15);
+      border: 1px solid rgba(66, 133, 244, 0.35);
+      color: #93bfff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .reset-btn:hover {
+      background: rgba(66, 133, 244, 0.3);
+      color: #fff;
+      border-color: #4285f4;
+    }
+
+    /* Main Voice Calling Stage */
+    .call-stage {
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px 20px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .call-status-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 16px;
+      background: rgba(17, 21, 32, 0.7);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+      animation: pulseDot 1.5s infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Premade Voice Agent Orb & Live Waveform */
+    .voice-console-card {
+      width: 100%;
+      background: linear-gradient(180deg, rgba(18, 23, 35, 0.8) 0%, rgba(13, 16, 25, 0.95) 100%);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .voice-console-card::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      width: 240px;
+      height: 100px;
+      background: radial-gradient(ellipse, rgba(66, 133, 244, 0.2) 0%, transparent 70%);
+      filter: blur(20px);
+      pointer-events: none;
+    }
+
+    .orb-wrapper {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .voice-orb {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #9b72cb 0%, #4285f4 55%, #1ba0e1 100%);
+      box-shadow: 
+        0 0 40px rgba(66, 133, 244, 0.4),
+        0 0 80px rgba(155, 114, 203, 0.25);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: orbFloat 4s infinite ease-in-out;
+    }
+
+    .voice-orb.listening {
+      background: radial-gradient(circle at 40% 40%, #10b981 0%, #059669 50%, #0284c7 100%);
+      box-shadow: 
+        0 0 50px rgba(16, 185, 129, 0.55),
+        0 0 90px rgba(5, 150, 105, 0.35);
+      transform: scale(1.12);
+      animation: orbListenPulse 1.2s infinite alternate ease-in-out;
+    }
+
+    .voice-orb.speaking {
+      background: radial-gradient(circle at 35% 35%, #d96570 0%, #9b72cb 50%, #4285f4 100%);
+      box-shadow: 
+        0 0 60px rgba(217, 101, 112, 0.6),
+        0 0 110px rgba(155, 114, 203, 0.45);
+      transform: scale(1.18);
+      animation: orbSpeakPulse 1s infinite alternate ease-in-out;
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50% { transform: scale(1.04) translateY(-4px); }
+    }
+    @keyframes orbListenPulse {
+      0% { transform: scale(1.08); box-shadow: 0 0 35px rgba(16, 185, 129, 0.5); }
+      100% { transform: scale(1.18); box-shadow: 0 0 65px rgba(16, 185, 129, 0.7); }
+    }
+    @keyframes orbSpeakPulse {
+      0% { transform: scale(1.12) rotate(0deg); }
+      100% { transform: scale(1.24) rotate(45deg); }
+    }
+
+    /* Live Audio Soundwave Visualizer */
+    .soundwave-box {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      height: 36px;
+      margin-bottom: 12px;
+    }
+
+    .wave-bar {
+      width: 4px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      transition: height 0.15s ease, background 0.2s ease;
+    }
+
+    .soundwave-box.active .wave-bar {
+      background: var(--gemini-gradient);
+      animation: waveDance 1.2s infinite ease-in-out;
+    }
+    .soundwave-box.active .wave-bar:nth-child(1) { animation-delay: 0.1s; }
+    .soundwave-box.active .wave-bar:nth-child(2) { animation-delay: 0.3s; }
+    .soundwave-box.active .wave-bar:nth-child(3) { animation-delay: 0.0s; }
+    .soundwave-box.active .wave-bar:nth-child(4) { animation-delay: 0.4s; }
+    .soundwave-box.active .wave-bar:nth-child(5) { animation-delay: 0.2s; }
+    .soundwave-box.active .wave-bar:nth-child(6) { animation-delay: 0.5s; }
+    .soundwave-box.active .wave-bar:nth-child(7) { animation-delay: 0.15s; }
+
+    @keyframes waveDance {
+      0%, 100% { height: 8px; }
+      50% { height: 32px; }
+    }
+
+    .orb-status-text {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .barge-in-badge {
+      font-size: 11px;
+      color: var(--amber);
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    .orb-substatus {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 520px;
+    }
+
+    /* Real-Time Live Speech Transcript Bar */
+    .live-transcript-card {
+      width: 100%;
+      background: rgba(8, 11, 17, 0.7);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 12px 18px;
+      margin-top: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      min-height: 48px;
+    }
+    .live-mic-icon {
+      color: var(--green);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .live-transcript-text {
+      font-size: 14px;
+      color: #e2e8f0;
+      font-style: italic;
+      line-height: 1.4;
+      flex: 1;
+      word-break: break-word;
+    }
+    .live-transcript-placeholder {
+      color: #555d6e;
+      font-style: normal;
+    }
+
+    /* Hands-Free Voice Call Controls (No typing input prompt!) */
+    .call-controls-deck {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 28px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      font-family: var(--font-main);
+    }
+    .control-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+    .btn-connect {
+      background: #10b981;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+    }
+    .btn-connect:hover {
+      background: #059669;
+      transform: translateY(-1px);
+    }
+
+    .btn-hangup {
+      background: #ef4444;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35);
+    }
+    .btn-hangup:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+    }
+
+    .btn-mic-toggle {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .btn-mic-toggle.active {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+    .btn-mic-toggle:hover { background: rgba(255, 255, 255, 0.14); }
+
+    /* Quick Voice Simulation Chips */
+    .quick-voice-chips {
+      display: flex;
+      gap: 8px;
+      max-width: 860px;
+      width: 100%;
+      overflow-x: auto;
+      padding: 6px 4px;
+    }
+    .quick-voice-chips::-webkit-scrollbar { display: none; }
+
+    .voice-chip {
+      background: rgba(22, 27, 38, 0.65);
+      border: 1px solid var(--panel-border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 18px;
+      font-size: 11px;
+      white-space: nowrap;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .voice-chip:hover {
+      background: rgba(66, 133, 244, 0.15);
+      border-color: rgba(66, 133, 244, 0.35);
+      color: #fff;
+    }
+
+    /* Dialogue History & Extracted Entities Ledger */
+    .dialogue-history-section {
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 10px 20px 40px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .turns-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .turn-row {
+      display: flex;
+      gap: 12px;
+      animation: turnFade 0.25s ease-out;
+    }
+    @keyframes turnFade {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .turn-row.caller { justify-content: flex-end; }
+
+    .speaker-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+    .speaker-avatar.bot {
+      background: var(--gemini-gradient);
+      color: #fff;
+    }
+    .speaker-avatar.caller {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .speech-bubble {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .speech-bubble.bot {
+      background: var(--bubble-bot);
+      border: 1px solid var(--panel-border);
+      color: var(--text-main);
+      border-top-left-radius: 4px;
+    }
+    .speech-bubble.caller {
+      background: var(--bubble-user);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-top-right-radius: 4px;
+    }
+
+    .entities-tag-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .entity-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      background: rgba(66, 133, 244, 0.12);
+      color: #7bb0ff;
+      border: 1px solid rgba(66, 133, 244, 0.25);
+    }
+    .entity-tag.green {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--green);
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+    .entity-tag.amber {
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--amber);
+      border-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .dispatch-alert-card {
+      margin-top: 10px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #6ee7b7;
+      white-space: pre-line;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="gemini-sparkle"></div>
+      <div>
+        <div class="brand-title">Vittoris Inbound AI Voice Agent</div>
+        <div style="font-size: 11px; color: var(--text-muted);">Premade Telephony Screener for Google Voice</div>
+      </div>
+      <div class="brand-tag">v2.4 Hands-Free</div>
+    </div>
+
+    <div class="header-controls">
+      <!-- Google Voice Line / Caller ID Mode -->
+      <div class="config-pill">
+        <label>Line Caller ID:</label>
+        <select id="caller-id-select" class="config-select" onchange="onCallerIdOptionChange()">
+          <option value="+1 (555) 019-2834" selected>📞 Detected (+1 555-019-2834)</option>
+          <option value="+1 (415) 555-0199">📞 Detected (+1 415-555-0199)</option>
+          <option value="UNKNOWN">👤 Unknown / Private Line (Asks Number)</option>
+        </select>
+      </div>
+
+      <!-- Recipient Availability Target -->
+      <div class="config-pill">
+        <label>Vittoris Team:</label>
+        <select id="team-status-select" class="config-select" onchange="onTeamStatusChange(this.value)">
+          <option value="BUSY" selected>🔴 Busy (Takes Callback)</option>
+          <option value="AVAILABLE">🟢 Available (Live Transfer)</option>
+        </select>
+      </div>
+
+      <!-- Reset / Brand New Caller -->
+      <button class="reset-btn" onclick="startFreshCallSession()" title="Treat as a brand new caller every time">
+        🔄 New Caller / Call Again
+      </button>
+    </div>
+  </header>
+
+  <main class="call-stage">
+    <!-- Active Telephony Banner -->
+    <div class="call-status-banner">
+      <div class="pulse-dot"></div>
+      <span id="call-line-badge">Google Voice Inbound Line Active: (555) 019-VITT</span>
+      <span style="opacity: 0.4;">|</span>
+      <span id="call-timer-text">Call Active: 00:00</span>
+    </div>
+
+    <!-- Voice Console Card -->
+    <div class="voice-console-card">
+      <div class="orb-wrapper">
+        <div class="voice-orb" id="voice-orb"></div>
+      </div>
+
+      <!-- Animated Soundwave Reactive Bars -->
+      <div class="soundwave-box" id="soundwave-box">
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+      </div>
+
+      <div class="orb-status-text" id="orb-status-text">
+        <span id="status-main-label">Ready for Call</span>
+        <span class="barge-in-badge" id="barge-badge" title="You can speak at any time to interrupt the AI">Barge-in Enabled</span>
+      </div>
+
+      <div class="orb-substatus" id="orb-substatus">
+        Microphone auto-starts after the AI speaks. Speak naturally; the AI stops immediately when you interrupt.
+      </div>
+
+      <!-- Live Real-Time Speech Transcript (Hands-Free!) -->
+      <div class="live-transcript-card">
+        <div class="live-mic-icon">
+          <span>🎙️</span>
+          <span style="font-size: 11px; font-weight: 600;">CALLER:</span>
+        </div>
+        <div class="live-transcript-text" id="live-transcript-text">
+          <span class="live-transcript-placeholder">Your voice words appear here live as you talk...</span>
+        </div>
+      </div>
+
+      <!-- Hands-Free Call Controls (NO text typing box) -->
+      <div class="call-controls-deck">
+        <button class="control-btn btn-connect" id="btn-call-action" onclick="startFreshCallSession()">
+          <svg viewBox="0 0 24 24"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+          <span id="btn-call-text">Restart Inbound Call</span>
+        </button>
+
+        <button class="control-btn btn-mic-toggle active" id="btn-mic-toggle" onclick="toggleMicrophone()">
+          <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+          <span id="mic-status-label">Mic: Auto-Listen ON</span>
+        </button>
+
+        <button class="control-btn btn-hangup" onclick="hangUpCall()">
+          <svg viewBox="0 0 24 24"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
+          <span>Mute / End</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Voice Simulation Chips (For Instant Testing / Fallback) -->
+    <div class="quick-voice-chips">
+      <button class="voice-chip" onclick="simulateSpokenTurn('Hi, my name is Alex and I am calling regarding the contract')">
+        🗣️ 1. "Hi, my name is Alex, calling about the contract"
+      </button>
+      <button class="voice-chip" onclick="simulateSpokenTurn('the best time would be tomorrow at 2 and my number is 555 019 2834')">
+        🗣️ 2. "Tomorrow at 2 and my number is 555 019 2834"
+      </button>
+      <button class="voice-chip" onclick="simulateSpokenTurn('the phone number is 55 50 19 28 34')">
+        🗣️ 3. "The phone number is 55 50 19 28 34"
+      </button>
+      <button class="voice-chip" onclick="simulateSpokenTurn('This is Michael Chang, our cloud service is down urgent!')">
+        🚨 4. "Michael Chang, urgent outage!"
+      </button>
+    </div>
+  </main>
+
+  <!-- Live Spoken Dialogue Stream & Extraction Ledger -->
+  <section class="dialogue-history-section">
+    <div class="section-title">
+      <span>💬 Live Telephony Call Ledger</span>
+      <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);" id="session-id-display"></span>
+    </div>
+
+    <div class="turns-container" id="turns-container">
+      <!-- Conversation turns will be dynamically rendered here -->
+    </div>
+  </section>
+
+  <script>
+    // --- Application State ---
+    let currentSessionId = generateSessionId();
+    let isCallActive = false;
+    let callTimerInterval = null;
+    let callSeconds = 0;
+    let isMicEnabled = true;
+    let recognition = null;
+    let isListening = false;
+    let silenceTimer = null;
+    let bestVoice = null;
+    let callerEntities = { name: null, reason: null, phone: null, bestTime: null };
+    const synth = window.speechSynthesis;
+
+    function generateSessionId() {
+      return 'call_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
+    }
+
+    // --- Voice Setup ---
+    function initVoices() {
+      if (!synth) return;
+      const voices = synth.getVoices();
+      bestVoice = voices.find(v => v.name.includes("Google US English") || v.name.includes("Natural") || v.name.includes("Samantha") || v.name.includes("Ava"))
+               || voices.find(v => v.lang.startsWith("en-US") || v.lang.startsWith("en"))
+               || voices[0];
+    }
+    if (synth) {
+      synth.onvoiceschanged = initVoices;
+      initVoices();
+    }
+
+    // --- Digit-by-Digit Speech Conversion for Phone Numbers ---
+    function formatNumbersForSpeech(text) {
+      if (!text) return text;
+      // Convert space-separated or standard grouped digits into spaced numbers with natural pausing
+      return text.replace(/(?:\+?\d[\d\s\-\(\)\.]{8,}\d)/g, (match) => {
+        const digits = match.replace(/\D/g, '');
+        if (digits.length >= 10) {
+          const parts = [];
+          for (let i = 0; i < digits.length; i += 3) {
+            parts.push(digits.substring(i, Math.min(i + 3, digits.length)).split('').join(' '));
+          }
+          return parts.join(', ');
+        }
+        return match;
+      });
+    }
+
+    // --- Telephony Call Flow & State Management ---
+    function getSelectedCallerId() {
+      const select = document.getElementById('caller-id-select');
+      const val = select ? select.value : 'UNKNOWN';
+      return val === 'UNKNOWN' ? null : val;
+    }
+
+    function onCallerIdOptionChange() {
+      // Whenever caller ID option changes, restart fresh call with this caller ID
+      startFreshCallSession();
+    }
+
+    function onTeamStatusChange(newStatus) {
+      fetch('/api/recipient/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      }).catch(err => console.warn('Status update fallback', err));
+    }
+
+    function startFreshCallSession() {
+      if (synth && synth.speaking) synth.cancel();
+      stopListening();
+
+      currentSessionId = generateSessionId();
+      callerEntities = { name: null, reason: null, phone: null, bestTime: null };
+      
+      const container = document.getElementById('turns-container');
+      if (container) container.innerHTML = '';
+      
+      document.getElementById('session-id-display').textContent = `ID: ${currentSessionId}`;
+      document.getElementById('live-transcript-text').innerHTML = '<span class="live-transcript-placeholder">Your voice words appear here live as you talk...</span>';
+
+      const callerPhone = getSelectedCallerId();
+      if (callerPhone) {
+        callerEntities.phone = callerPhone;
+      }
+
+      // Reset Call Timer
+      clearInterval(callTimerInterval);
+      callSeconds = 0;
+      isCallActive = true;
+      callTimerInterval = setInterval(() => {
+        callSeconds++;
+        const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+        const secs = String(callSeconds % 60).padStart(2, '0');
+        document.getElementById('call-timer-text').textContent = `Call Active: ${mins}:${secs}`;
+      }, 1000);
+
+      let url = `/api/call/start?session_id=${currentSessionId}`;
+      if (callerPhone) {
+        url += `&caller_phone=${encodeURIComponent(callerPhone)}`;
+      }
+
+      fetch(url, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          botSpeak(data.bot_speech_response, data.extracted_entities);
+        })
+        .catch(() => {
+          // Fallback greeting if offline
+          const fallbackGreeting = callerPhone 
+            ? "Hello! Thank you for calling Vittoris. Please state your name and the reason for your call."
+            : "Hello! Thank you for calling Vittoris. Please state your name and the reason for your call.";
+          botSpeak(fallbackGreeting, callerEntities);
+        });
+    }
+
+    function hangUpCall() {
+      isCallActive = false;
+      clearInterval(callTimerInterval);
+      if (synth && synth.speaking) synth.cancel();
+      stopListening();
+
+      setVisualState('idle', 'Call Ended', 'The inbound call has concluded. Tap "Restart Inbound Call" for a new caller.');
+      document.getElementById('call-timer-text').textContent = "Call Concluded";
+    }
+
+    // --- Web Speech Recognition & Auto-Mic Start with Barge-in ---
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        document.getElementById('orb-substatus').textContent = "Note: Voice Recognition requires Chrome/Edge/Safari. You can use the quick voice chips below to test.";
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      // 1. BARGE-IN: The moment speech/sound is detected, immediately silence the AI if speaking!
+      recognition.onstart = () => {
+        isListening = true;
+        if (synth && synth.speaking) {
+          synth.cancel(); // MUTE BOT IMMEDIATELY ON BARGE-IN
+        }
+        setVisualState('listening', 'Listening to You...', 'Speak naturally. Take your time; when you finish speaking, your turn will be processed automatically.');
+      };
+
+      recognition.onspeechstart = () => {
+        if (synth && synth.speaking) {
+          synth.cancel(); // MUTE BOT IMMEDIATELY ON BARGE-IN
+          setVisualState('listening', 'Listening (Barge-in Interrupted)...', 'AI was interrupted and is listening to you.');
+        }
+      };
+
+      recognition.onresult = (event) => {
+        // Double-check barge-in interruption
+        if (synth && synth.speaking) {
+          synth.cancel();
+        }
+
+        let interimText = '';
+        let finalText = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalText += event.results[i][0].transcript;
+          } else {
+            interimText += event.results[i][0].transcript;
+          }
+        }
+
+        const currentSpoken = (finalText || interimText).trim();
+        if (currentSpoken) {
+          document.getElementById('live-transcript-text').textContent = `"${currentSpoken}"`;
+        }
+
+        // Automatic End-Of-Turn Detection (Silence Pause: 1.8 seconds)
+        clearTimeout(silenceTimer);
+        silenceTimer = setTimeout(() => {
+          if (currentSpoken) {
+            handleSpokenTurn(currentSpoken);
+          }
+        }, 1800);
+      };
+
+      recognition.onerror = (e) => {
+        console.warn('Speech recognition error:', e.error);
+        if (e.error !== 'no-speech') {
+          stopListening();
+        }
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        // Auto-reconnect if call is active and bot is not speaking
+        if (isCallActive && isMicEnabled && (!synth || !synth.speaking)) {
+          startListeningSafely();
+        }
+      };
+    }
+
+    function startListeningSafely() {
+      if (!recognition || !isMicEnabled || !isCallActive) return;
+      try {
+        recognition.start();
+      } catch (e) {
+        // Already started or transitioning
+      }
+    }
+
+    function stopListening() {
+      clearTimeout(silenceTimer);
+      if (recognition) {
+        try { recognition.stop(); } catch(e) {}
+      }
+      isListening = false;
+    }
+
+    function toggleMicrophone() {
+      isMicEnabled = !isMicEnabled;
+      const btn = document.getElementById('btn-mic-toggle');
+      const label = document.getElementById('mic-status-label');
+
+      if (isMicEnabled) {
+        btn.classList.add('active');
+        label.textContent = "Mic: Auto-Listen ON";
+        if (!synth || !synth.speaking) {
+          startListeningSafely();
+        }
+      } else {
+        btn.classList.remove('active');
+        label.textContent = "Mic: Muted";
+        stopListening();
+        setVisualState('idle', 'Microphone Muted', 'Unmute microphone or click any quick voice prompt to talk.');
+      }
+    }
+
+    // --- Conversational Turn Dispatch (Hands-Free) ---
+    function handleSpokenTurn(callerSpeech) {
+      clearTimeout(silenceTimer);
+      stopListening();
+
+      // Show caller message in ledger
+      appendTurnToLedger('caller', callerSpeech);
+      document.getElementById('live-transcript-text').innerHTML = `<span style="color: #60a5fa;">Processing turn: "${callerSpeech}"...</span>`;
+      setVisualState('processing', 'Processing...', 'Understanding inquiry & checking availability...');
+
+      // Dispatch to FastAPI Backend
+      fetch('/api/call/turn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: currentSessionId,
+          speech_text: callerSpeech
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('live-transcript-text').innerHTML = '<span class="live-transcript-placeholder">Your voice words appear here live as you talk...</span>';
+        botSpeak(data.bot_speech_response, data.extracted_entities, data.notification_preview);
+      })
+      .catch(err => {
+        console.warn('Backend turn failed, executing local state engine fallback', err);
+        processTurnClientSide(callerSpeech);
+      });
+    }
+
+    function simulateSpokenTurn(text) {
+      if (synth && synth.speaking) synth.cancel();
+      document.getElementById('live-transcript-text').textContent = `"${text}"`;
+      handleSpokenTurn(text);
+    }
+
+    // --- AI Voice Output with Auto-Mic Resumption & Barge-In Binding ---
+    function botSpeak(speechText, entities = null, notification = null) {
+      appendTurnToLedger('bot', speechText, entities, notification);
+
+      setVisualState('speaking', 'Vittoris AI is Speaking...', 'Barge-in enabled: start talking anytime to interrupt.');
+
+      if (synth) {
+        synth.cancel();
+
+        const formattedForAudio = formatNumbersForSpeech(speechText);
+        const utterance = new SpeechSynthesisUtterance(formattedForAudio);
+        if (bestVoice) utterance.voice = bestVoice;
+        utterance.rate = 0.96; // Smooth, conversational pace
+        utterance.pitch = 1.0;
+
+        // When the AI finishes speaking -> AUTOMATICALLY START THE MICROPHONE!
+        utterance.onend = () => {
+          if (isCallActive && isMicEnabled) {
+            setVisualState('listening', 'Listening to You...', 'Your microphone is active. Please state your details or questions.');
+            startListeningSafely();
+          } else {
+            setVisualState('idle', 'Call Waiting', 'Microphone muted or call ended.');
+          }
+        };
+
+        utterance.onerror = () => {
+          if (isCallActive && isMicEnabled) {
+            startListeningSafely();
+          }
+        };
+
+        synth.speak(utterance);
+      } else {
+        // Fallback when speech synthesis is unsupported
+        setTimeout(() => {
+          if (isCallActive && isMicEnabled) {
+            startListeningSafely();
+          }
+        }, 1500);
+      }
+    }
+
+    // --- Robust Phone & Entity Extraction for Client-Side Fallback ---
+    function extractClientPhone(text) {
+      const wordDigits = {
+        zero: "0", oh: "0", one: "1", two: "2", three: "3",
+        four: "4", five: "5", six: "6", seven: "7", eight: "8", nine: "9"
+      };
+      const words = text.toLowerCase().split(/\s+/);
+      const normalized = words.map(w => {
+        const clean = w.replace(/[^\w]/g, '');
+        return wordDigits[clean] || w;
+      }).join(' ');
+
+      // Match after keywords
+      const kwMatch = normalized.match(/(?:phone|number|call|reach|contact)(?:\s+is|\s+at|\s+on)?\s*([+\d\s\-\(\)\.]{7,30})/i);
+      if (kwMatch) {
+        const digits = kwMatch[1].replace(/\D/g, '');
+        if (digits.length >= 10) return kwMatch[1].trim();
+      }
+
+      // Match any 10-15 digit string with spaces/hyphens
+      const digitSeqs = normalized.match(/(?:\+?\d[\d\s\-\(\)\.]{8,}\d)/g);
+      if (digitSeqs) {
+        for (const seq of digitSeqs) {
+          const d = seq.replace(/\D/g, '');
+          if (d.length >= 10 && d.length <= 15) return seq.trim();
+        }
+      }
+      return null;
+    }
+
+    function processTurnClientSide(text) {
+      const lower = text.toLowerCase();
+
+      // Extract Name
+      const nameMatch = text.match(/(?:my name is|name's|this is|i am|i'm)\s+([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?=\s+(?:calling|about|regarding|from|with|and|,|\.|$))/i)
+                     || text.match(/\b([A-Z][a-z]+\s+[A-Z][a-z]+)\s+(?:here|speaking)\b/i);
+      if (nameMatch && (!callerEntities.name || /name|this is|i am/i.test(text))) {
+        callerEntities.name = nameMatch[1].trim();
+      }
+
+      // Extract Reason
+      const reasonMatch = text.match(/(?:calling regarding|calling about|calling to discuss|calling to|regarding|about)\s+([^.,;]+)/i);
+      if (reasonMatch && !callerEntities.reason) {
+        callerEntities.reason = reasonMatch[1].trim();
+      }
+
+      // Extract Phone (Robust multi-group / space extractor)
+      const phoneFound = extractClientPhone(text);
+      if (phoneFound) {
+        callerEntities.phone = phoneFound;
+      }
+
+      // Extract Best Time
+      const timeMatch = text.match(/(?:best time (?:is|to call(?: me)?(?: is)?|would be)|available)\s+([^.,;]+)/i)
+                     || text.match(/(?:tomorrow|today|monday|tuesday|wednesday|thursday|friday)\s+(?:at\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)?|morning|afternoon|evening)/i);
+      if (timeMatch) {
+        callerEntities.bestTime = timeMatch[0].trim();
+      }
+
+      const teamStatus = document.getElementById('team-status-select').value;
+      const name = callerEntities.name || "there";
+      const reason = callerEntities.reason || "your call";
+
+      let responseText = "";
+      let notification = null;
+
+      if (!callerEntities.name || !callerEntities.reason) {
+        if (!callerEntities.name && callerEntities.reason) {
+          responseText = `Thank you for reaching out regarding ${reason}. May I please have your name before we continue?`;
+        } else if (callerEntities.name && !callerEntities.reason) {
+          responseText = `Thank you, ${name}. Could you please state the reason for your call?`;
+        } else {
+          responseText = `Hello! Thank you for calling Vittoris. Please state your name and the reason for your call.`;
+        }
+      } else if (teamStatus === 'AVAILABLE') {
+        responseText = `Thank you, ${name}. The Vittoris team is available right now. Please hold on while I connect your call directly to discuss ${reason}.`;
+      } else {
+        // Team is BUSY: Check phone and callback time
+        const hasPhone = Boolean(callerEntities.phone);
+        const hasTime = Boolean(callerEntities.bestTime);
+
+        if (hasPhone && hasTime) {
+          const spokenPhone = formatNumbersForSpeech(callerEntities.phone);
+          responseText = `Thank you, ${name}. I have noted your number as ${spokenPhone}, and requested a callback for ${callerEntities.bestTime} regarding ${reason}. The Vittoris team has been notified and will reach back to you then. Have a wonderful day!`;
+          notification = `📱 [DISPATCHED TO Vittoris Team via Slack & SMS]\nCallback Request from ${name} (${callerEntities.phone}) for ${callerEntities.bestTime}.\nReason: ${reason}`;
+        } else if (hasPhone && !hasTime) {
+          const spokenPhone = formatNumbersForSpeech(callerEntities.phone);
+          responseText = `Thank you, ${name}. I have your phone number as ${spokenPhone}. What would be the best time or window for our team to reach back to you?`;
+        } else if (!hasPhone && hasTime) {
+          responseText = `Thank you, ${name}. We will reach back ${callerEntities.bestTime}. Could you please provide the phone number our team should call you on?`;
+        } else {
+          responseText = `Thank you, ${name}. The Vittoris team is currently busy and unavailable to take your call right now. Could you please leave your phone number and the best time for our team to reach back to you?`;
+        }
+      }
+
+      botSpeak(responseText, callerEntities, notification);
+    }
+
+    // --- UI Helper Functions ---
+    function setVisualState(state, title, subtitle) {
+      const orb = document.getElementById('voice-orb');
+      const soundwave = document.getElementById('soundwave-box');
+      const titleEl = document.getElementById('status-main-label');
+      const subEl = document.getElementById('orb-substatus');
+      const bargeBadge = document.getElementById('barge-badge');
+
+      orb.classList.remove('listening', 'speaking');
+      soundwave.classList.remove('active');
+
+      if (state === 'listening') {
+        orb.classList.add('listening');
+        soundwave.classList.add('active');
+        bargeBadge.style.display = 'none';
+      } else if (state === 'speaking') {
+        orb.classList.add('speaking');
+        soundwave.classList.add('active');
+        bargeBadge.style.display = 'inline-block';
+      } else if (state === 'processing') {
+        orb.style.transform = 'scale(1.05)';
+        bargeBadge.style.display = 'none';
+      } else {
+        bargeBadge.style.display = 'none';
+      }
+
+      if (title) titleEl.textContent = title;
+      if (subtitle) subEl.textContent = subtitle;
+    }
+
+    function appendTurnToLedger(speaker, text, entities = null, notification = null) {
+      const container = document.getElementById('turns-container');
+      if (!container) return;
+
+      const row = document.createElement('div');
+      row.className = `turn-row ${speaker}`;
+
+      const avatar = document.createElement('div');
+      avatar.className = `speaker-avatar ${speaker}`;
+      avatar.textContent = speaker === 'bot' ? '✦' : '👤';
+
+      const bubble = document.createElement('div');
+      bubble.className = `speech-bubble ${speaker}`;
+      bubble.textContent = text;
+
+      // Append extracted entity badges if available
+      if (entities) {
+        const tagWrap = document.createElement('div');
+        tagWrap.className = 'entities-tag-wrap';
+
+        if (entities.caller_name || entities.name) {
+          const tag = document.createElement('span');
+          tag.className = 'entity-tag green';
+          tag.textContent = `✓ Name: ${entities.caller_name || entities.name}`;
+          tagWrap.appendChild(tag);
+        }
+        if (entities.reason_for_calling || entities.reason) {
+          const tag = document.createElement('span');
+          tag.className = 'entity-tag';
+          tag.textContent = `✓ Reason: ${entities.reason_for_calling || entities.reason}`;
+          tagWrap.appendChild(tag);
+        }
+        if (entities.phone_number || entities.phone) {
+          const tag = document.createElement('span');
+          tag.className = 'entity-tag green';
+          tag.textContent = `✓ Phone: ${entities.phone_number || entities.phone}`;
+          tagWrap.appendChild(tag);
+        }
+        if (entities.best_time_to_reach || entities.bestTime) {
+          const tag = document.createElement('span');
+          tag.className = 'entity-tag';
+          tag.textContent = `✓ Time: ${entities.best_time_to_reach || entities.bestTime}`;
+          tagWrap.appendChild(tag);
+        }
+        if (tagWrap.children.length > 0) {
+          bubble.appendChild(tagWrap);
+        }
+      }
+
+      if (notification) {
+        const notifCard = document.createElement('div');
+        notifCard.className = 'dispatch-alert-card';
+        notifCard.textContent = notification;
+        bubble.appendChild(notifCard);
+      }
+
+      if (speaker === 'bot') {
+        row.appendChild(avatar);
+        row.appendChild(bubble);
+      } else {
+        row.appendChild(bubble);
+        row.appendChild(avatar);
+      }
+
+      container.appendChild(row);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    // Initialize on Page Load
+    document.addEventListener('DOMContentLoaded', () => {
+      initSpeechRecognition();
+      initVoices();
+      startFreshCallSession();
+    });
+  </script>
+</body>
+</html>

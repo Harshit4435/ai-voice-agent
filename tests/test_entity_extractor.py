@@ -42,6 +42,24 @@ class TestEntityExtractor(unittest.TestCase):
         t3 = "No phone number here at all."
         self.assertIsNone(self.extractor.extract_phone(t3))
 
+        # Space-separated 4-4-2 format
+        t4 = "the best time would be tomorrow at 2 and my number is 5550 1928 34"
+        phone4 = self.extractor.extract_phone(t4)
+        self.assertIsNotNone(phone4)
+        self.assertEqual("".join(c for c in phone4 if c.isdigit()), "5550192834")
+
+        # 2-2-2-2-2 format
+        t5 = "the phone number is 55 50 19 28 34"
+        phone5 = self.extractor.extract_phone(t5)
+        self.assertIsNotNone(phone5)
+        self.assertEqual("".join(c for c in phone5 if c.isdigit()), "5550192834")
+
+        # Spoken words
+        t6 = "my number is five five five zero one nine two eight three four"
+        phone6 = self.extractor.extract_phone(t6)
+        self.assertIsNotNone(phone6)
+        self.assertEqual("".join(c for c in phone6 if c.isdigit()), "5550192834")
+
     def test_extract_best_time(self):
         t1 = "You can reach me at 415-555-0199, and the best time to call is tomorrow at 2 PM."
         best_time = self.extractor.extract_best_time(t1)

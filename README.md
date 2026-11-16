@@ -1,26 +1,37 @@
-# Inbound Call AI Agent 📞🤖
+# AI Voice Agent 📞🤖
 
-An intelligent automated voice screening, intent classification, and recipient availability router.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-10b981?style=for-the-badge&logo=github)](https://harshit4435.github.io/ai-voice-agent/)
+[![Tests](https://img.shields.io/badge/Tests-24%20Passing-blue?style=for-the-badge&logo=pytest)](https://github.com/Harshit4435/ai-voice-agent)
+
+An intelligent, hands-free inbound AI voice receptionist and telephony screener with intent classification, recipient availability routing, auto-start microphone, and barge-in interruption.
+
+🌐 **Live Server / Demo**: **[https://harshit4435.github.io/ai-voice-agent/](https://harshit4435.github.io/ai-voice-agent/)**
 
 ---
 
 ## 🌟 Key Capabilities
 
-1. **Inbound Call Screening**: Greets callers with: *"Thank you for calling. Please state your name and the reason for your call."*
-2. **Intent & Entity Extraction**:
-   - Accurately classifies caller intent into 6 distinct operational categories.
-   - Extracts caller name, purpose/reason, callback phone number, and preferred reach-back time window.
-3. **Dynamic Recipient Status Routing**:
-   - **When Recipient is BUSY / IN A MEETING**: Notifies caller that the recipient is unavailable and captures their phone number & best callback window, logging the message and dispatching a Slack/SMS alert to the recipient.
+1. **Hands-Free AI Voice Calling Console**:
+   - Designed for voice telephony (Google Voice, SIP, Twilio).
+   - Zero typing required: pure voice conversation interface with live spoken transcripts.
+   - Dynamic animated voice orb and live audio soundwave visualizer.
+2. **Auto-Start Microphone**:
+   - The microphone automatically activates when the AI finishes speaking (`utterance.onend`), enabling smooth conversational turns without touching any buttons.
+3. **Barge-in / Instant Voice Interruption**:
+   - If the caller begins speaking while the AI is talking, speech playback is cancelled instantly (`synth.cancel()`), allowing natural conversational interruptions.
+4. **Google Voice Line & Caller ID Integration**:
+   - **When Caller ID is detected**: The AI recognizes the caller's number, acknowledges it, and avoids asking for the phone number again.
+   - **When Caller ID is unknown/private**: Prompts for caller number with support for international, space-separated, and spoken-word formats (`"555 019 2834"`).
+5. **Fresh Caller Sessions**:
+   - Each inbound call is strictly isolated and starts with a fresh session, ensuring no state leakage between calls.
+6. **Dynamic Recipient Status Routing**:
+   - **When Recipient is BUSY / IN A MEETING**: Collects caller name, reason, phone number, and preferred callback window, then dispatches an automated Slack/SMS alert to the team.
    - **When Recipient is AVAILABLE**: Informs caller and initiates a live call transfer to the recipient's direct line.
-4. **Calibrated Machine Learning Model**:
+7. **Calibrated Machine Learning Model**:
    - Sublinear TF-IDF + Calibrated Linear Support Vector Classifier (`LinearSVC`).
-   - Trained with Stratified 5-Fold Cross-Validation (**88.57% mean CV accuracy**) and holdout validation (**88.46% accuracy, 88.54% Macro F1**).
-5. **Interactive Localhost Web Dashboard**:
-   - Modern glassmorphism UI running at `http://localhost:8000`.
-   - Real-time speech input (Web Speech API microphone), browser TTS voice playback, live state stepper, and model telemetry.
-6. **Mandatory Test Suite**:
-   - 22 comprehensive unit & integration tests passing with 100% success rate.
+   - Stratified 5-Fold Cross-Validation (**88.57% mean CV accuracy**) and holdout validation (**88.46% accuracy, 88.54% Macro F1**).
+8. **Automated Test Suite**:
+   - 24 comprehensive unit & integration tests passing with 100% success rate.
 
 ---
 

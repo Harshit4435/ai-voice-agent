@@ -84,7 +84,8 @@ async function startInboundCall() {
   currentSessionId = 'call_' + Math.random().toString(36).substring(2, 9);
   isCallActive = true;
 
-  // UI Updates
+  // UI Updates - Fresh caller state every time
+  resetEntitiesDisplay();
   const btn = document.getElementById('btn-call-action');
   btn.textContent = '🛑 End Call (Hang Up)';
   btn.classList.add('hangup');

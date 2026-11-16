@@ -59,10 +59,17 @@ async def serve_index():
 
 # --- Call Session Endpoints ---
 @app.post("/api/call/start", response_model=CallTurnResponse, tags=["call_flow"])
-async def start_inbound_call(session_id: str | None = None) -> CallTurnResponse:
-    """Initiates an inbound call session and returns the initial screening prompt."""
-    session = session_manager.get_or_create(session_id)
-    return session.start_call()
+async def start_inbound_call(session_id: str | None = None, caller_phone: str | None = None) -> CallTurnResponse:
+    """Initiates an inbound call session treating the caller as a brand-new user every time."""
+    session = session_manager.create_fresh_session(session_id)
+    return session.start_call(caller_phone=caller_phone)
+
+
+@app.post("/api/session/reset", tags=["call_flow"])
+async def reset_caller_session(session_id: str | None = None) -> Dict[str, str]:
+    """Explicitly resets or purges a caller session to a brand-new user state."""
+    session = session_manager.create_fresh_session(session_id)
+    return {"message": "Caller session reset to new user state", "session_id": session.session_id}
 
 
 @app.post("/api/call/turn", response_model=CallTurnResponse, tags=["call_flow"])
